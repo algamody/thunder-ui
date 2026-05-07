@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 import React from "react"
 import { useParams, useLocation, useNavigate } from "react-router"
 import { ThunderSDK } from "thunder-sdk"
@@ -35,7 +36,7 @@ JSONSchemaToFields.resolveRef = async (ref, field) => {
   const createProjection = () => {
     const fields =
       field.refLabel instanceof Array
-        ? field.refLabel
+      ? field.refLabel
         : [field.refLabel, "label", "name", "title"].filter(Boolean)
 
     return Object.fromEntries(fields.map((field) => [field, 1]))
@@ -99,8 +100,6 @@ export function FormPage({ name }: IFormPageProps) {
       setFields(await fieldsFromModuleMetadata(metadata))
     })()
   }, [metadata])
-
-  console.log(location.state?.record);
 
   const onSubmit: SubmitHandler<any> = async (body) => {
     if (isEditMode) {
