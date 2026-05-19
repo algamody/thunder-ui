@@ -356,7 +356,9 @@ export function ListPage({ group, name }: IListPageProps) {
           </div>
         </ActionBar>
 
-        {isLoading ? (
+        {view === "cards" && Cards ? (
+          <Cards isLoading={isLoading} data={data?.results ?? []} />
+        ) : isLoading ? (
           <TableSkeleton />
         ) : data?.results.length === 0 && !isLoading ? (
           <Empty>
@@ -370,8 +372,6 @@ export function ListPage({ group, name }: IListPageProps) {
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
-        ) : view === "card" && Cards ? (
-          <Cards isLoading={isLoading} data={data?.results ?? []} />
         ) : (
           <DataTable table={table} />
         )}
