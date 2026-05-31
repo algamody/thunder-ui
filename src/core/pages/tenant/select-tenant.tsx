@@ -1,3 +1,4 @@
+import React from "react"
 import {
   Card,
   CardContent,
@@ -7,7 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { use } from "@/core/hooks/use"
-import React from "react"
 
 import Logo from "/logo.png"
 import {
@@ -25,14 +25,25 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { SkeletonRepeater } from "@/core/custom/SkeletonRepeater"
 import TenantForm from "./form"
 import { IconAlertCircle, IconUser } from "@tabler/icons-react"
-import { getTenants } from "@/core/lib/api"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Navigate, useLocation, useNavigate } from "react-router"
+import { ThunderSDK } from "thunder-sdk"
 
 export function SelectTenant() {
   const navigate = useNavigate()
   const { hash } = useLocation()
-  const tenants = React.useMemo(() => getTenants(), [])
+
+  const tenants = React.useCallback(
+    async ({ signal }: { signal?: AbortSignal }) => {
+      return await ThunderSDK.tenantMemberships.get({
+        signal,
+        query: {},
+        params: {},
+      })
+    },
+    []
+  )
+
   const { data, error, isLoading } = use(tenants)
 
   if (data?.results.length === 1 && hash !== "#list")
@@ -61,7 +72,12 @@ export function SelectTenant() {
           <CardContent>
             <ScrollArea className="h-50 w-full">
               {data?.results.map(({ tenant }) => (
-                <Item variant="muted" size="xs" key={tenant._id as string} className="first:rounded-b-lg last:rounded-t-lg mb-1">
+                <Item
+                  variant="muted"
+                  size="xs"
+                  key={tenant._id as string}
+                  className="mb-1 first:rounded-b-lg last:rounded-t-lg"
+                >
                   <ItemMedia variant="default">
                     <Avatar size="lg">
                       <AvatarImage

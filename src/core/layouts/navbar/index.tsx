@@ -42,11 +42,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { getMe } from "@/core/lib/api"
 import { use } from "@/core/hooks/use"
 import { getAuthUrl, getInitials, transformImage } from "@/core/lib/utils"
 import { useLogout } from "@/core/protected"
 import { SubNav } from "./sub-nav"
+import { ThunderSDK } from "thunder-sdk"
 
 export type TNav = {
   title: string
@@ -81,7 +81,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile()
   const logout = useLogout()
 
-  const _me = React.useMemo(() => getMe(), [])
+  const _me = React.useCallback(
+    async ({ signal }: { signal?: AbortSignal }) => {
+      return await ThunderSDK.me.get({ signal })
+    },
+    []
+  )
+
   const { data: me } = use(_me)
 
   const { routes, subRoutes } = React.useMemo(() => {
@@ -294,7 +300,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </header>
 
           {/* Main Content */}
-          <main className="relative mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col gap-3 pt-5 pb-3 page-transition">
+          <main className="page-transition relative mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col gap-3 pt-5 pb-3">
             {/* You can use Breadcrumb component here */}
             <Breadcrumb />
 

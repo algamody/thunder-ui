@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input"
 import { useLoading } from "@/core/context/LoaderProvider"
 import { AvatarUpload } from "@/core/custom/AvatarUpload"
 import { use } from "@/core/hooks/use"
-import { getMe, getTenants } from "@/core/lib/api"
 import { handleUpload } from "@/core/lib/utils"
 import React from "react"
 import { Controller, useForm, type SubmitHandler } from "react-hook-form"
@@ -22,7 +21,14 @@ const DefaultForm = {
 
 export default function TenantForm() {
   const { setLoading } = useLoading()
-  const _me = React.useMemo(() => getMe(), [])
+
+  const _me = React.useCallback(
+    async ({ signal }: { signal?: AbortSignal }) => {
+      return await ThunderSDK.me.get({ signal })
+    },
+    []
+  )
+
   const { data: me } = use(_me)
 
   const { control, register, handleSubmit, formState } = useForm<
@@ -33,11 +39,10 @@ export default function TenantForm() {
 
   const onSubmit: SubmitHandler<typeof DefaultForm> = async (form) => {
     setLoading(true)
-    const { tenantId } = await ThunderSDK.tenants
+
+    await ThunderSDK.tenants
       .create({ body: form })
       .finally(() => setLoading(false))
-
-    if (tenantId) getTenants().expire()
   }
 
   return (

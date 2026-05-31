@@ -1,6 +1,6 @@
 import React from "react"
 
-type TRequestCallback<T> = () => Promise<T>
+type TRequestCallback<T> = (opts: { signal: AbortSignal }) => Promise<T>
 
 type TRequester<T> = {
   get: TRequestCallback<T>
@@ -35,29 +35,32 @@ export function use<T>(
   const [data, setData] = React.useState<T | null>(null)
   const [error, setError] = React.useState<Error | null>(null)
 
-  const SendRequest = React.useCallback(async () => {
-    if (!can) return
+  const SendRequest = React.useCallback(
+    async (opts: { signal: AbortSignal }) => {
+      if (!can) return
 
-    setLoading(true)
+      setLoading(true)
 
-    for (let attempt = 0; attempt <= (options?.maxRetries ?? 0); attempt++) {
-      try {
-        const Response = await _request()
+      for (let attempt = 0; attempt <= (options?.maxRetries ?? 0); attempt++) {
+        try {
+          const Response = await _request(opts)
 
-        setData(Response)
-        setLoading(false)
-
-        return
-      } catch (err) {
-        if (!options?.maxRetries || attempt === options.maxRetries) {
-          setError(err instanceof Error ? err : new Error(`${err}`))
+          setData(Response)
           setLoading(false)
 
           return
+        } catch (err) {
+          if (!options?.maxRetries || attempt === options.maxRetries) {
+            setError(err instanceof Error ? err : new Error(`${err}`))
+            setLoading(false)
+
+            return
+          }
         }
       }
-    }
-  }, [_request, can, options?.maxRetries])
+    },
+    [_request, can, options?.maxRetries]
+  )
 
   const triggerElement =
     options?.triggerTarget && document.getElementById(options.triggerTarget)
@@ -85,7 +88,9 @@ export function use<T>(
   }, [SendRequest, triggerElement])
 
   React.useEffect(() => {
-    const handleChange = () => SendRequest()
+    const controller = new AbortController()
+
+    const handleChange = () => SendRequest({ signal: controller.signal })
 
     window.addEventListener("online", handleChange)
 
@@ -98,6 +103,8 @@ export function use<T>(
     _onExpire?.(handleExpire)
 
     return () => {
+      controller.abort()
+
       window.removeEventListener("online", handleChange)
 
       _offInvalidate?.(setData)
@@ -106,7 +113,13 @@ export function use<T>(
   }, [SendRequest, _onInvalidate, _offInvalidate, _onExpire, _offExpire])
 
   React.useEffect(() => {
-    SendRequest()
+    const controller = new AbortController()
+
+    SendRequest({ signal: controller.signal })
+
+    return () => {
+      controller.abort()
+    }
   }, [count, SendRequest])
 
   return {
