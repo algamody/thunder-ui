@@ -145,7 +145,7 @@ function ProtectedWithSession({ children }: { children: React.ReactNode }) {
             setReady(true)
           })
           .catch((error) => {
-            console.error("Failed to register permissions", error)
+            console.error("Failed to register permissions", error, error instanceof AxiosError, error.response)
 
             if (error instanceof AxiosError && error.response?.status === 403) {
               navigate("/select-tenant/#list")
