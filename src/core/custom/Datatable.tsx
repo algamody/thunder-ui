@@ -50,7 +50,7 @@ export function DataTable({ table }: DataTableProps) {
     <div className="flex flex-col gap-3 overflow-hidden rounded-xl border">
       <div className="relative min-h-0 w-full flex-1 [&>div]:h-full [&>div]:overflow-y-auto">
         <Table className="table-fixed">
-          <TableHeader className="sticky top-0 z-10 bg-muted/30 backdrop-blur-sm *:[tr]:first:*:[th]:first:rounded-ss-xl *:[tr]:last:*:[th]:last:rounded-se-xl">
+          <TableHeader className="sticky top-0 z-10 bg-accent *:[tr]:first:*:[th]:first:rounded-ss-xl *:[tr]:last:*:[th]:last:rounded-se-xl">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
                 key={headerGroup.id}
@@ -67,7 +67,7 @@ export function DataTable({ table }: DataTableProps) {
                   return (
                     <TableHead
                       key={header.id}
-                      className="relative truncate data-pinned:bg-background/90 data-pinned:backdrop-blur-xs py-0"
+                      className="relative truncate py-0 data-pinned:bg-background/90 data-pinned:backdrop-blur-xs"
                       data-last-col={
                         isLastLeftPinned
                           ? "left"
@@ -209,7 +209,7 @@ export function DataTable({ table }: DataTableProps) {
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                className="group data-[state=selected]:bg-primary/10"
+                className="group h-10 data-[state=selected]:bg-primary/10"
               >
                 {row.getVisibleCells().map((cell) => {
                   const { column } = cell
@@ -222,7 +222,7 @@ export function DataTable({ table }: DataTableProps) {
                   return (
                     <TableCell
                       key={cell.id}
-                      className="group relative truncate border-b! group-data-[state=selected]:border-background py-0.5 data-pinned:border-primary! data-pinned:bg-background/90 data-pinned:backdrop-blur-xs"
+                      className="group relative truncate border-b! py-0.5 align-middle group-data-[state=selected]:border-background data-pinned:border-primary! data-pinned:bg-background/90 data-pinned:backdrop-blur-xs"
                       data-last-col={
                         isLastLeftPinned
                           ? "left"

@@ -46,10 +46,12 @@ import { getLocalUrl, transformImage } from "../lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Filters, type TFilterValue } from "./filters"
 import { filterToMongo } from "./filters/lib/filterToMongo"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const columnFromModuleMetadata = async (metadata: any) => {
   const fields = await fieldsFromModuleMetadata(metadata, {
     type: "output",
+    resolveRef: true,
   })
 
   return JSONSchemaToFields.flatten(fields, { excludeArray: true })
@@ -217,6 +219,8 @@ export function ListPage({ group, name }: IListPageProps) {
 
   const [view, setView] = React.useState(Cards ? "cards" : "table")
 
+  console.log(fields)
+
   return (
     <div className="relative flex h-full min-h-0 flex-1 flex-col gap-5">
       {error && (
@@ -227,73 +231,80 @@ export function ListPage({ group, name }: IListPageProps) {
         </Alert>
       )}
       <div className="flex min-h-0 flex-1 flex-col gap-3">
-        {!isLoading ? (
-          <div className="flex flex-wrap-reverse items-center justify-between gap-2 lg:flex-nowrap">
-            <Filters fields={fields} filters={filters} onChange={setFilters} />
+        <div className="flex flex-wrap-reverse items-center justify-between gap-2 lg:flex-nowrap">
+          <Filters fields={fields} filters={filters} onChange={setFilters} />
 
-            <div className="flex shrink-0 flex-1 grow items-center justify-end gap-3">
-              {data?.results.length ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={
-                      <Button variant="outline" className="max-w-fit">
-                        Visibility
-                      </Button>
-                    }
-                  ></DropdownMenuTrigger>
-
-                  <DropdownMenuContent
-                    align="end"
-                    className="no-scrollbar max-h-100 overflow-auto"
-                  >
-                    <DropdownMenuCheckboxItem
-                      checked={table.getIsAllColumnsVisible()}
-                      onCheckedChange={(value) =>
-                        table.toggleAllColumnsVisible(!!value)
+          <div className="flex flex-1 shrink-0 grow items-center justify-end gap-3">
+            {isLoading ? (
+              <>
+                <Skeleton className="h-9 w-18" />
+                <Skeleton className="h-9 w-18" />
+              </>
+            ) : (
+              <>
+                {data?.results.length ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button variant="outline" className="max-w-fit">
+                          Visibility
+                        </Button>
                       }
+                    ></DropdownMenuTrigger>
+
+                    <DropdownMenuContent
+                      align="end"
+                      className="no-scrollbar max-h-100 overflow-auto"
                     >
-                      Select all
-                    </DropdownMenuCheckboxItem>
-                    {table
-                      .getAllColumns()
-                      .filter((col) => col.getCanHide())
-                      .map((column) => {
-                        return (
-                          <DropdownMenuCheckboxItem
-                            key={column.id}
-                            checked={column.getIsVisible()}
-                            onCheckedChange={(value) =>
-                              column.toggleVisibility(!!value)
-                            }
-                          >
-                            <span className="line-clamp-1 truncate">
-                              {column.columnDef.header as string}
-                            </span>
-                          </DropdownMenuCheckboxItem>
-                        )
-                      })}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : null}
-              {allowCreate && (
-                <Button onClick={() => navigate("form")}>Create</Button>
-              )}
-              {!!Cards && (
-                <ToggleGroup
-                  value={view}
-                  onValueChange={(v) => v && setView(v)}
-                >
-                  <ToggleGroupItem value="cards" aria-label="Cards view">
-                    <IconLayoutGrid className="size-4" />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="table" aria-label="Table view">
-                    <IconTable className="size-4" />
-                  </ToggleGroupItem>
-                </ToggleGroup>
-              )}
-            </div>
+                      <DropdownMenuCheckboxItem
+                        checked={table.getIsAllColumnsVisible()}
+                        onCheckedChange={(value) =>
+                          table.toggleAllColumnsVisible(!!value)
+                        }
+                      >
+                        Select all
+                      </DropdownMenuCheckboxItem>
+                      {table
+                        .getAllColumns()
+                        .filter((col) => col.getCanHide())
+                        .map((column) => {
+                          return (
+                            <DropdownMenuCheckboxItem
+                              key={column.id}
+                              checked={column.getIsVisible()}
+                              onCheckedChange={(value) =>
+                                column.toggleVisibility(!!value)
+                              }
+                            >
+                              <span className="line-clamp-1 truncate">
+                                {column.columnDef.header as string}
+                              </span>
+                            </DropdownMenuCheckboxItem>
+                          )
+                        })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : null}
+                {allowCreate && (
+                  <Button onClick={() => navigate("form")}>Create</Button>
+                )}
+                {!!Cards && (
+                  <ToggleGroup
+                    value={view}
+                    onValueChange={(v) => v && setView(v)}
+                  >
+                    <ToggleGroupItem value="cards" aria-label="Cards view">
+                      <IconLayoutGrid className="size-4" />
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="table" aria-label="Table view">
+                      <IconTable className="size-4" />
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                )}
+              </>
+            )}
           </div>
-        ) : null}
+        </div>
 
         <ActionBar
           containerClassName="absolute bottom-10 left-3 right-3 max-w-md mx-auto z-20 shadow-sm"

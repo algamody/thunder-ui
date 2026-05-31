@@ -282,6 +282,41 @@ function __FilterValueController({
     )
 }
 
+export function OptionItem({
+  onSelect,
+  ...item
+}: {
+  icon?: React.ElementType
+  label: string
+  value: string
+  checked: boolean
+  onSelect: (value: string) => void
+}) {
+  const handleSelect = React.useCallback(() => {
+    onSelect(item.value)
+  }, [onSelect, item.value])
+
+  return (
+    <CommandItem
+      key={item.value as string}
+      onSelect={handleSelect}
+      value={item.value}
+      className="group flex items-center justify-between gap-1.5 px-2"
+    >
+      <div className="flex items-center gap-1.5">
+        {item.icon && <item.icon className="size-4 text-primary" />}
+        <span>{item.label}</span>
+      </div>
+
+      <CommandShortcut>
+        <IconCheck
+          className={cn("size-4", item.checked ? "opacity-100" : "opacity-0")}
+        />
+      </CommandShortcut>
+    </CommandItem>
+  )
+}
+
 export function FilterValueMultiOptionController({
   filter,
   field,
@@ -289,6 +324,7 @@ export function FilterValueMultiOptionController({
 }: TFilterValueProps & {
   onChange: (value: string[]) => void
 }) {
+  const [values, setValues] = React.useState<string[]>(filter?.value ?? [])
   // Compute initial options once per mount
   const initialOptions = React.useMemo(() => {
     return (
@@ -304,6 +340,15 @@ export function FilterValueMultiOptionController({
     )
   }, [field])
 
+  const setFilterValueDebounced = useDebounceCallback(onChange, 800)
+
+  const handleChange = React.useCallback(
+    (value: string[]) => {
+      setFilterValueDebounced(value)
+    },
+    [setFilterValueDebounced]
+  )
+
   return (
     <Command loop>
       <CommandInput autoFocus placeholder="Search" />
@@ -311,36 +356,19 @@ export function FilterValueMultiOptionController({
       <CommandList>
         <CommandGroup className={cn(initialOptions.length === 0 && "hidden")}>
           {initialOptions.map((option) => (
-            <CommandItem
-              key={option.value as string}
-              onSelect={() =>
-                onChange(
-                  filter?.value.includes(option.value)
-                    ? (filter.value as string[]).filter(
-                        (v) => v !== option.value
-                      )
-                    : [...(filter?.value ?? []), option.value]
-                )
-              }
-              value={option.value as string}
-              className="group flex items-center justify-between gap-1.5 px-2"
-            >
-              <div className="flex items-center gap-1.5">
-                {option.icon && <option.icon className="size-4 text-primary" />}
-                <span>{option.label}</span>
-              </div>
+            <OptionItem
+              key={option.value}
+              {...option}
+              checked={values.includes(option.value)}
+              onSelect={(value) => {
+                const updatedValues = values.includes(value)
+                  ? ((values ?? []) as string[]).filter((v) => v !== value)
+                  : [...(values ?? []), value]
 
-              <CommandShortcut>
-                <IconCheck
-                  className={cn(
-                    "size-4",
-                    filter?.value.includes(option.value)
-                      ? "opacity-100"
-                      : "opacity-0"
-                  )}
-                />
-              </CommandShortcut>
-            </CommandItem>
+                setValues(updatedValues)
+                handleChange(updatedValues)
+              }}
+            />
           ))}
         </CommandGroup>
       </CommandList>
@@ -360,7 +388,7 @@ export function FilterValueDateController({
     to: filter?.value[1] ?? undefined,
   })
 
-  const setFilterValueDebounced = useDebounceCallback(onChange, 300)
+  const setFilterValueDebounced = useDebounceCallback(onChange, 500)
 
   function changeDateRange(value: DateRange | undefined) {
     const start = value?.from
