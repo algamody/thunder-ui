@@ -1,6 +1,8 @@
 import { ThunderSDK } from "thunder-sdk"
 import { upload } from "@imagekit/react"
 import Package from "../../../package.json"
+import type { TRouteObject } from "../router"
+import type { TNav } from "../layouts/shared/sub-nav"
 
 export function appName() {
   return Package.name
@@ -125,4 +127,40 @@ export function formatDateForInput(
 export function allowDisplayRoute(display?: boolean | (() => boolean)) {
   if (typeof display === "function") return display()
   return display ?? true
+}
+
+export function getNavRoutes(router: TRouteObject[]) {
+  const routes: TNav[] = []
+  const subRoutes: TNav[] = []
+
+  for (const route of router) {
+    if (!allowDisplayRoute(route.display)) continue
+
+    for (const child of route.children ?? []) {
+      if (!allowDisplayRoute(child.display)) continue
+
+      const parentPath = child.path ?? "/"
+
+      routes.push({
+        title: child.name || "Unnamed Route",
+        icon: child.icon,
+        path: parentPath,
+      })
+
+      for (const subChild of child.children ?? []) {
+        if (!allowDisplayRoute(subChild.display)) continue
+
+        subRoutes.push({
+          title: subChild.name || "Unnamed Route",
+          icon: subChild.icon,
+          path: subChild.path,
+          parent: parentPath,
+        })
+      }
+    }
+  }
+
+  const subRoutesByParent = Object.groupBy(subRoutes, (i) => i.parent!)
+
+  return { routes, subRoutes: subRoutesByParent }
 }

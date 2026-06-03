@@ -1,8 +1,14 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { IconAlertCircle } from "@tabler/icons-react"
+import { IconAlertCircle, type TablerIcon } from "@tabler/icons-react"
 import { useLocation, useNavigate } from "react-router"
-import type { TNav } from "."
 import React from "react"
+
+export type TNav = {
+  title: string
+  icon?: TablerIcon
+  path?: string
+  parent?: string
+}
 
 export function SubNav({ navMenu }: { navMenu: TNav[] }) {
   const navigate = useNavigate()

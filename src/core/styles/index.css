@@ -171,3 +171,81 @@
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
+
+
+
+.page-transition {
+  view-transition-name: page-content;
+}
+
+::view-transition-old(page-content),
+::view-transition-new(page-content) {
+  animation-duration: 150ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+::view-transition-old(page-content) {
+  animation-name: page-exit;
+}
+
+::view-transition-new(page-content) {
+  animation-name: page-enter;
+}
+
+@keyframes page-exit {
+  to {
+    opacity: 0;
+    transform: translateX(16px) scale(0.995);
+  }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-16px) scale(0.995);
+  }
+}
+
+/* Mobile page navigation: native-style horizontal slide.
+   New page slides in from the right while the old page parallaxes out to the left. */
+.page-transition-mobile {
+  view-transition-name: mobile-page;
+}
+
+::view-transition-old(mobile-page),
+::view-transition-new(mobile-page) {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+  animation-fill-mode: both;
+}
+
+::view-transition-old(mobile-page) {
+  animation-name: mobile-page-exit;
+}
+
+::view-transition-new(mobile-page) {
+  animation-name: mobile-page-enter;
+}
+
+@keyframes mobile-page-exit {
+  to {
+    opacity: 0;
+    transform: translateX(-25%);
+  }
+}
+
+@keyframes mobile-page-enter {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(mobile-page),
+  ::view-transition-new(mobile-page) {
+    animation-duration: 1ms;
+    animation-name: none;
+  }
+}

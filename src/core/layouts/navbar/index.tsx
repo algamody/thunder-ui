@@ -30,7 +30,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { NavMenu } from "./nav-menu"
-import { allowDisplayRoute, appName } from "@/core/lib/utils"
+import { allowDisplayRoute, appName, getNavRoutes } from "@/core/lib/utils"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,15 +45,8 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { use } from "@/core/hooks/use"
 import { getAuthUrl, getInitials, transformImage } from "@/core/lib/utils"
 import { useLogout } from "@/core/protected"
-import { SubNav } from "./sub-nav"
+import { SubNav } from "../shared/sub-nav"
 import { ThunderSDK } from "thunder-sdk"
-
-export type TNav = {
-  title: string
-  icon?: TablerIcon
-  path?: string
-  parent?: string
-}
 
 function SidebarTrigger() {
   const { toggleSidebar } = useSidebar()
@@ -85,39 +78,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const { data: me } = use(_me)
 
-  const { routes, subRoutes } = React.useMemo(() => {
-    const routes: TNav[] = []
-    const subRoutes: TNav[] = []
-
-    for (const route of router.routes as TRouteObject[]) {
-      if (!allowDisplayRoute(route.display)) continue
-
-      for (const child of route.children ?? []) {
-        if (!allowDisplayRoute(child.display)) continue
-
-        const parentPath = child.path ?? "/"
-
-        routes.push({
-          title: child.name || "Unnamed Route",
-          icon: child.icon,
-          path: parentPath,
-        })
-
-        for (const subChild of child.children ?? []) {
-          if (!allowDisplayRoute(subChild.display)) continue
-
-          subRoutes.push({
-            title: subChild.name || "Unnamed Route",
-            icon: subChild.icon,
-            path: subChild.path,
-            parent: parentPath,
-          })
-        }
-      }
-    }
-
-    return { routes, subRoutes: Object.groupBy(subRoutes, (i) => i.parent!) }
-  }, [router.routes])
+  const { routes, subRoutes } = React.useMemo(() => getNavRoutes(router.routes), [router.routes])
 
   const [, activeParent] = React.useMemo(
     () => location.pathname.split("/").filter(Boolean),
