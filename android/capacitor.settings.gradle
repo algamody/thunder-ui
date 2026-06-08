@@ -17,8 +17,5 @@ project(':capacitor-preferences').projectDir = new File('../node_modules/@capaci
 include ':capacitor-splash-screen'
 project(':capacitor-splash-screen').projectDir = new File('../node_modules/@capacitor/splash-screen/android')
 
-include ':capawesome-team-capacitor-oauth'
-project(':capawesome-team-capacitor-oauth').projectDir = new File('../node_modules/@capawesome-team/capacitor-oauth/android')
-
 include ':capawesome-capacitor-android-edge-to-edge-support'
 project(':capawesome-capacitor-android-edge-to-edge-support').projectDir = new File('../node_modules/@capawesome/capacitor-android-edge-to-edge-support/android')
