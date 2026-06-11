@@ -13,6 +13,7 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Button } from "@/components/ui/button"
+import { RenderFieldGroup } from "./RenderFieldGroup"
 
 export type TRenderArrayProp = {
   name: string
@@ -66,7 +67,15 @@ export default function RenderArray({ name, field }: TRenderArrayProp) {
         {fields.map(({ id }, index) => {
           return (
             <FieldGroup key={id}>
-              {(field.fields ?? []).map((subField, subIndex) => {
+              <RenderFieldGroup
+                fields={field.fields ?? []}
+                fieldName={(subField) =>
+                  [name, index, subField.name]
+                    .filter((i) => i !== undefined)
+                    .join(".")
+                }
+              />
+              {/* {(field.fields ?? []).map((subField, subIndex) => {
                 const fieldName = [name, index, subField.name]
                   .filter((i) => i !== undefined)
                   .join(".")
@@ -78,7 +87,7 @@ export default function RenderArray({ name, field }: TRenderArrayProp) {
                     field={subField}
                   />
                 )
-              })}
+              })} */}
 
               <Button variant={"destructive"} onClick={() => remove(index)}>
                 Remove

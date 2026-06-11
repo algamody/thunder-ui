@@ -58,7 +58,7 @@ export default function RenderInput({ name, field }: TRenderInputProps) {
   if (field.type === "hidden" && (!field.required || !!field.const)) return null
 
   return (
-    <Field>
+    <Field className={field.className} style={field.style}>
       {field.type === "hidden" ? null : (
         <FieldLabel htmlFor={id}>
           {field.label ?? name}

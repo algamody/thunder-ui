@@ -15,8 +15,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { JSONSchemaToFields, type TField } from "../lib/jsonSchemaToFields"
-import RenderInput from "./form/RenderInput"
 import { forms } from "@/overrides/crud/forms"
+import { RenderFieldGroup } from "./form/RenderFieldGroup"
 
 export const fieldsFromModuleMetadata = async (
   metadata: any,
@@ -207,13 +207,7 @@ export function FormPage({ name }: IFormPageProps) {
                 {isEditMode ? "Loading record..." : "Loading form..."}
               </Skeleton>
             ) : (
-              fields.map((field, index) => (
-                <RenderInput
-                  key={`${field.name}_${index}`}
-                  name={field.name!}
-                  field={field}
-                />
-              ))
+              <RenderFieldGroup fields={fields[0].fields ?? []} />
             )}
 
             <FieldSet>

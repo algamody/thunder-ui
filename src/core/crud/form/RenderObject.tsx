@@ -13,6 +13,7 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import RenderInput from "./RenderInput"
+import { RenderFieldGroup } from "./RenderFieldGroup"
 
 export type TRenderObjectProp = {
   name: string
@@ -54,7 +55,13 @@ export default function RenderObject({ name, field }: TRenderObjectProp) {
         <FieldError>{getError(name)}</FieldError>
       </FieldSet>
       <FieldSet>
-        <FieldGroup>
+        <RenderFieldGroup
+          fields={field.fields ?? []}
+          fieldName={(subField) =>
+            [name, subField.name].filter(Boolean).join(".")
+          }
+        />
+        {/* <FieldGroup>
           {(field.fields ?? []).map((subField, index) => {
             const fieldName = [name, subField.name].filter(Boolean).join(".")
 
@@ -66,7 +73,7 @@ export default function RenderObject({ name, field }: TRenderObjectProp) {
               />
             )
           })}
-        </FieldGroup>
+        </FieldGroup> */}
       </FieldSet>
     </FieldGroup>
   )

@@ -314,6 +314,11 @@ export const FieldTypes = [
 export type TFieldType = (typeof FieldTypes)[number];
 export type TField = {
   type: TFieldType | "array" | "object";
+  group?: string;
+  groupClassName?: string;
+  className?: string;
+  groupStyle?: React.CSSProperties;
+  style?: React.CSSProperties;
   fields?: Array<TField>;
   name?: string;
   parentName?: string;
@@ -365,6 +370,11 @@ export class JSONSchemaToFields {
   protected static jsonFieldSchema = z
     .object({
       type: z.string().default("string"),
+      group: z.string().optional(),
+      groupClassName: z.string().optional(),
+      className: z.string().optional(),
+      groupStyle: z.record(z.string(), z.string()).optional(),
+      style: z.record(z.string(), z.string()).optional(),
       default: z.unknown().optional(),
       label: z.string().optional(),
       minItems: z.number().optional(),

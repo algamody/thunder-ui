@@ -5,6 +5,10 @@
 @import "@fontsource-variable/geist";
 @import "./core/styles/index.css";
 
+@source inline(
+  "grid grid-cols-{1..12} grid-rows-{1..12} gap-{1..10} grid-flow-{col|row} col-span-{1..12}"
+);
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
