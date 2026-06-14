@@ -210,10 +210,9 @@ export function ListPage({ group, name }: IListPageProps) {
   })
 
   const fetcher = React.useCallback(
-    (_: Record<string, 1>) => {
-      if (Object.keys(_).length === 0) {
+    (_?: Record<string, 1>) => {
+      if (!_ || Object.keys(_).length === 0) {
         refetch()
-
         return
       }
 
