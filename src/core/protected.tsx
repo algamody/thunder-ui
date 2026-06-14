@@ -9,12 +9,15 @@ import { refreshThunder } from "./lib/thunder"
 import { getAuthUrl } from "./lib/utils"
 import { isAxiosError } from "axios"
 import { useAuth, useOptionalAuth } from "./context/AuthProvider"
+import { useLoading } from "./context/LoaderProvider"
+import { Spinner } from "@/components/ui/spinner"
 
 function ProtectedWithOAuth({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = React.useState(false)
   const [error, setError] = React.useState<Error | null>(null)
 
   const auth = useAuth()
+  const { isLoading, setLoading } = useLoading()
   const logout = useLogout()
 
   React.useEffect(() => {
@@ -48,7 +51,8 @@ function ProtectedWithOAuth({ children }: { children: React.ReactNode }) {
   const loadingPermissions = !requireSignIn && !ready
 
   const handleSignIn = () => {
-    auth.userManager.signinRedirect()
+    setLoading(true)
+    auth.userManager.signinRedirect().finally(() => setLoading(false))
   }
 
   const handleLogout = async () => {
@@ -73,7 +77,10 @@ function ProtectedWithOAuth({ children }: { children: React.ReactNode }) {
         icon={IconLogin}
         description="Click the following button to sign into your account"
       >
-        <Button onClick={handleSignIn}>Sign In</Button>
+        <Button onClick={handleSignIn}>
+          {isLoading && <Spinner />}
+          Sign In
+        </Button>
       </LoadingScreen>
     )
   }
@@ -89,7 +96,7 @@ function ProtectedWithOAuth({ children }: { children: React.ReactNode }) {
         }
       >
         <Button variant="outline" onClick={handleSignInAgain}>
-          Sign in again?
+          {isLoading && <Spinner />} Sign in again?
         </Button>
         <Button onClick={handleRefresh}>Retry</Button>
       </LoadingScreen>
