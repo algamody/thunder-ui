@@ -342,6 +342,7 @@ export type TField = {
   refValue?: string;
   fieldHint?: string;
   const?: unknown;
+  canFilter?: boolean;
 };
 
 export class JSONSchemaToFields {

@@ -52,12 +52,14 @@ export function FilterSelector() {
           }}
         >
           <CommandInput ref={inputRef} placeholder="Search..." />
-          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandEmpty>No filters found.</CommandEmpty>
           <CommandList className="max-h-fit scroll-mask-y-from-90%">
             <CommandGroup>
               {fields
                 .filter(
-                  (v) => !["url", "hidden", "object", "array"].includes(v.type)
+                  (v) =>
+                    !["url", "hidden", "object", "array"].includes(v.type) &&
+                    v.canFilter
                 )
                 .map((field) => (
                   <FilterableColumn

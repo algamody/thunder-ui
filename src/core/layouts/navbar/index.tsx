@@ -242,12 +242,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </Button>
 
                 <Button
+                  className="hidden md:inline-flex"
                   variant="destructive"
                   onClick={logout}
-                  id="logout-button"
                   aria-label="Logout"
                 >
                   <IconLogout className="size-4" /> Logout
+                </Button>
+                <Button
+                  className="inline-flex md:hidden"
+                  variant="destructive"
+                  onClick={logout}
+                  size={"icon"}
+                  aria-label="Logout"
+                >
+                  <IconLogout className="size-4" />
                 </Button>
 
                 <SidebarTrigger />

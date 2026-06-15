@@ -11,17 +11,17 @@ const Screens = [
   {
     title: "Thunder UI",
     description: "Connect with thunder ui to fasten your UI process.",
-    image: "/public/logo.png",
+    image: "/logo.png",
   },
   {
     title: "Thunder UI 2",
     description: "Connect with thunder ui to fasten your UI process.",
-    image: "/public/logo.png",
+    image: "/logo.png",
   },
   {
     title: "Thunder UI 3",
     description: "Connect with thunder ui to fasten your UI process.",
-    image: "/public/logo.png",
+    image: "/logo.png",
   },
 ]
 

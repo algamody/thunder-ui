@@ -206,6 +206,7 @@ export function ListPage({ group, name }: IListPageProps) {
   }, [name])
 
   const [projection, setProjection] = React.useState<Record<string, 1>>({})
+  const [sorting, setSorting] = React.useState<Record<string, 1 | -1>>({})
 
   const get = React.useMemo(
     () =>
@@ -226,8 +227,9 @@ export function ListPage({ group, name }: IListPageProps) {
             }
           : {}),
         project: Object.keys(projection).length ? projection : undefined,
+        sort: Object.keys(sorting).length ? sorting : undefined,
       }),
-    [_get, filters, projection, fields, page]
+    [_get, filters, projection, sorting, fields, page]
   )
 
   const count = React.useMemo(() => _count(), [_count])
@@ -259,16 +261,11 @@ export function ListPage({ group, name }: IListPageProps) {
   }, [countRefetch, getRefetch])
 
   const fetcher = React.useCallback(
-    (_: Record<string, 1>) => {
-      if (Object.keys(_).length === 0) {
-        refetch()
+    (project?: Record<string, 1>, sort?: Record<string, 1 | -1>) => {
+      if (project && Object.keys(project).length) setProjection(project)
+      if (sort && Object.keys(sort).length) setSorting(sort)
 
-        return
-      }
-
-      setProjection(_)
-
-      if (Object.keys(projection).length) refetch()
+      refetch()
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [refetch]
