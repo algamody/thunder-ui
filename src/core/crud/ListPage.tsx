@@ -325,10 +325,10 @@ export function ListPage({ group, name }: IListPageProps) {
 
   const selectedRows = table.getFilteredSelectedRowModel().rows
 
-  const totalPages = React.useMemo(
-    () => Math.ceil(countData?.count ?? 0 / DEFAULT_LIMIT),
-    [countData]
-  )
+  // const totalPages = React.useMemo(
+  //   () => Math.ceil(countData?.count ?? 0 / DEFAULT_LIMIT),
+  //   [countData]
+  // )
 
   React.useEffect(() => {
     ;(async () => {

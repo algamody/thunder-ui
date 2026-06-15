@@ -7,12 +7,7 @@ import {
   type Table as TTable,
   flexRender,
 } from "@tanstack/react-table"
-import {
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableRow,
-} from "@/components/ui/table"
+import { TableCell, TableHead, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import {
   IconArrowBarToLeft,
