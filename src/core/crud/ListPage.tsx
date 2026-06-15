@@ -167,7 +167,7 @@ export interface IListPageProps {
 export function ListPage({ group, name }: IListPageProps) {
   const navigate = useNavigate()
 
-  const DEFAULT_LIMIT = 20
+  const DEFAULT_LIMIT = 100
   const [filters, setFilters] = React.useState<TFilterValue>()
   const [fields, setFields] = React.useState<TField[]>([])
   const [page, setPage] = React.useState(0)
@@ -222,7 +222,7 @@ export function ListPage({ group, name }: IListPageProps) {
           : undefined,
         ...(isCard
           ? {
-              offset: page,
+              offset: page * DEFAULT_LIMIT,
               limit: DEFAULT_LIMIT,
             }
           : {}),
@@ -331,6 +331,8 @@ export function ListPage({ group, name }: IListPageProps) {
       setFields(await columnFromModuleMetadata(metadata, true))
     })()
   }, [metadata])
+
+  console.log("len", getData?.results.length)
 
   return (
     <div className={"relative flex h-full min-h-0 flex-1 flex-col gap-3"}>
@@ -490,13 +492,14 @@ export function ListPage({ group, name }: IListPageProps) {
             }}
           />
 
-          {countLoading ? (
+          {countLoading && !countData ? (
             <div className="flex items-center justify-center">
               <Skeleton className="h-9 w-sm" />
             </div>
           ) : countData?.count ? (
             <Pagination
               active={page}
+              limit={DEFAULT_LIMIT}
               total={countData.count ?? 0}
               onChange={(page) => {
                 setPage(page)

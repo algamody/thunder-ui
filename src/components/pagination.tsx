@@ -19,28 +19,31 @@ import React, { useMemo } from "react"
 
 function calculatePaginationRange(
   active: number,
-  total: number,
-  itemsToDisplay: number,
+  totalItems: number,
+  itemsPerPage: number,
+  pagesToDisplay: number,
   startFrom: 0 | 1
 ): { label: number; value: number }[] {
-  if (total <= 0 || itemsToDisplay <= 0) return []
-  const maxActive = total - 1
+  if (totalItems <= 0 || itemsPerPage <= 0 || pagesToDisplay <= 0) return []
 
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  const maxActive = totalPages - 1
   const safeActive = Math.min(Math.max(active, 0), maxActive)
 
-  const activeValue = safeActive
+  const visiblePages = Math.min(pagesToDisplay, totalPages)
 
-  const groupIndex = Math.floor(activeValue / itemsToDisplay)
+  const groupIndex = Math.floor(safeActive / visiblePages)
 
-  const startValue = groupIndex * itemsToDisplay
-  const endValue = Math.min(startValue + itemsToDisplay - 1, total - 1)
+  const startValue = groupIndex * visiblePages
+  const endValue = Math.min(startValue + visiblePages - 1, totalPages - 1)
 
   return Array.from({ length: endValue - startValue + 1 }, (_, i) => {
     const value = startValue + i
 
     return {
       label: value + startFrom,
-      value: value,
+      value,
     }
   })
 }
@@ -71,10 +74,18 @@ export function Pagination({
       calculatePaginationRange(
         active,
         total,
+        limit,
         paginationItemsToDisplay,
         startFrom
       ),
     [active, total, limit, paginationItemsToDisplay]
+  )
+
+  const handleChange = React.useCallback(
+    (page: number) => {
+      onChange(Math.min(Math.max(page, 0), total))
+    },
+    [total]
   )
 
   return (
@@ -82,21 +93,24 @@ export function Pagination({
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
-            onClick={() => onChange(Math.max(active - 1, 0))}
+            onClick={() => handleChange(Math.max(active - 1, 0))}
           />
         </PaginationItem>
         {range.map((page) => (
           <PaginationItem key={page.value} value={page.value}>
             <PaginationLink
               className={page.value === active ? "bg-primary text-white" : ""}
-              onClick={() => onChange(page.value)}
+              onClick={() => handleChange(page.value)}
             >
               {page.label}
             </PaginationLink>
           </PaginationItem>
         ))}
         <PaginationItem>
-          <Select items={totalPages}>
+          <Select
+            items={totalPages}
+            onValueChange={(value) => handleChange(Number(value))}
+          >
             <SelectTrigger className="w-full max-w-48">
               <PaginationEllipsis />
             </SelectTrigger>
@@ -114,7 +128,9 @@ export function Pagination({
         </PaginationItem>
         <PaginationItem>
           <PaginationNext
-            onClick={() => onChange(Math.min(active + 1, total))}
+            onClick={() =>
+              handleChange(Math.min(active + 1, totalPages.length - 1))
+            }
           />
         </PaginationItem>
       </PaginationContent>
