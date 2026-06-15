@@ -167,7 +167,7 @@ export interface IListPageProps {
 export function ListPage({ group, name }: IListPageProps) {
   const navigate = useNavigate()
 
-  const DEFAULT_LIMIT = 100
+  const DEFAULT_LIMIT = import.meta.env.VITE_DEFAULT_PAGINATION_LIMIT
   const [filters, setFilters] = React.useState<TFilterValue>()
   const [fields, setFields] = React.useState<TField[]>([])
   const [page, setPage] = React.useState(0)
@@ -325,14 +325,17 @@ export function ListPage({ group, name }: IListPageProps) {
 
   const selectedRows = table.getFilteredSelectedRowModel().rows
 
+  const totalPages = React.useMemo(
+    () => Math.ceil(countData?.count ?? 0 / DEFAULT_LIMIT),
+    [countData]
+  )
+
   React.useEffect(() => {
     ;(async () => {
       setFields(await columnFromModuleMetadata(metadata))
       setFields(await columnFromModuleMetadata(metadata, true))
     })()
   }, [metadata])
-
-  console.log("len", getData?.results.length)
 
   return (
     <div className={"relative flex h-full min-h-0 flex-1 flex-col gap-3"}>
@@ -526,7 +529,12 @@ export function ListPage({ group, name }: IListPageProps) {
               </EmptyHeader>
             </Empty>
           ) : (
-            <DataTable table={table} />
+            <DataTable
+              table={table}
+              // endReached={() => {
+              //   if (page <= totalPages) setPage(page + 1)
+              // }}
+            />
           )}
         </Container>
       ) : null}

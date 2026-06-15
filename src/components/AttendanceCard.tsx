@@ -1,4 +1,5 @@
 import React from "react"
+import { Virtuoso } from "react-virtuoso"
 import { Card, CardContent, CardHeader } from "./ui/card"
 import { Container } from "./container"
 
@@ -8,20 +9,20 @@ export function AttendanceCard({ data, fetcher }: any) {
   }, [fetcher])
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto mask-y-from-98%">
-      <Container className="relative flex w-full flex-col gap-3">
-        {data.map((v: any) => {
-          return (
-            <Card key={v._id}>
-              <CardHeader>{v.employeeCode}</CardHeader>
-              <CardContent>
-                <p>{v.punchAt}</p>
-                <p>{v.timezone}</p>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </Container>
-    </div>
+    <Virtuoso
+      className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto mask-y-from-98%"
+      data={data}
+      itemContent={(_, v) => (
+        <Container key={v._id} className="flex h-full w-full flex-col gap-3">
+          <Card>
+            <CardHeader>{v.employeeCode}</CardHeader>
+            <CardContent>
+              <p>{v.punchAt}</p>
+              <p>{v.timezone}</p>
+            </CardContent>
+          </Card>
+        </Container>
+      )}
+    />
   )
 }
