@@ -1,5 +1,6 @@
 import {
   useFileUpload,
+  formatBytes,
   type FileMetadata,
   type FileWithPreview,
 } from "@/core/hooks/use-file-upload"
@@ -32,6 +33,9 @@ export function ImageUpload({
     return []
   }, [initialFile, initialFiles])
 
+  const MAX_SIZE = 2 * 1024 * 1024
+  const MAX_SIZE_LABEL = formatBytes(MAX_SIZE)
+
   const [
     { files, isDragging, errors },
     {
@@ -46,7 +50,7 @@ export function ImageUpload({
   ] = useFileUpload({
     initialFiles: initFiles.length ? initFiles : undefined,
     multiple: multi,
-    maxSize: 2 * 1024 * 1024,
+    maxSize: MAX_SIZE,
     accept: "image/*",
     onFilesAdded: (addedFiles) => {
       for (const f of addedFiles) {
@@ -58,7 +62,6 @@ export function ImageUpload({
     },
   })
 
-  const MAX_SIZE_LABEL = "2 MB"
 
   // Show toast when file validation errors occur (e.g. file too large)
   React.useEffect(() => {
