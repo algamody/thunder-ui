@@ -15,11 +15,20 @@ import { Controller, useForm, type SubmitHandler } from "react-hook-form"
 import { ThunderSDK } from "thunder-sdk"
 
 const DefaultForm = {
+  _id: undefined,
   logo: undefined,
   name: "",
-}
+} as { _id?: string; logo?: string; name: string }
 
-export default function TenantForm({ footerContent, afterSubmitSuccess }: { afterSubmitSuccess?: () => void, footerContent?: () => React.ReactNode }) {
+export default function TenantForm({
+  data,
+  footerContent,
+  afterSubmitSuccess,
+}: {
+  data?: { logo?: string; name: string }
+  afterSubmitSuccess?: () => void
+  footerContent?: () => React.ReactNode
+}) {
   const { setLoading } = useLoading()
 
   const _me = React.useCallback(
@@ -34,15 +43,22 @@ export default function TenantForm({ footerContent, afterSubmitSuccess }: { afte
   const { control, register, handleSubmit, formState } = useForm<
     typeof DefaultForm
   >({
-    defaultValues: DefaultForm,
+    defaultValues: { ...DefaultForm, ...data },
   })
 
   const onSubmit: SubmitHandler<typeof DefaultForm> = async (form) => {
     setLoading(true)
 
-    await ThunderSDK.tenants
-      .create({ body: form })
-      .finally(() => setLoading(false))
+    const { _id, ...rest } = form
+
+    if (_id) {
+      await ThunderSDK.tenants
+        .update({ body: rest, params: { id: _id } })
+        .finally(() => setLoading(false))
+    } else
+      await ThunderSDK.tenants
+        .create({ body: rest })
+        .finally(() => setLoading(false))
 
     afterSubmitSuccess?.()
   }
@@ -60,12 +76,12 @@ export default function TenantForm({ footerContent, afterSubmitSuccess }: { afte
                 initialFile={
                   field.value
                     ? {
-                      id: field.value,
-                      type: "logo",
-                      name: field.value,
-                      url: field.value,
-                      size: 0,
-                    }
+                        id: field.value,
+                        type: "logo",
+                        name: field.value,
+                        url: field.value,
+                        size: 0,
+                      }
                     : undefined
                 }
                 onUpload={async ({ file }, signal) => {
@@ -99,7 +115,7 @@ export default function TenantForm({ footerContent, afterSubmitSuccess }: { afte
 
         <Field>
           <Button type="submit" disabled={formState.isSubmitting}>
-            Create tenant
+            {data ? "Update tenant" : "Create tenant"}
           </Button>
 
           {footerContent?.()}

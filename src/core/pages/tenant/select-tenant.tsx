@@ -26,18 +26,28 @@ import { SkeletonRepeater } from "@/core/custom/SkeletonRepeater"
 import TenantForm from "./form"
 import {
   IconAlertCircle,
+  IconDots,
   IconPlus,
-  IconTrash,
   IconUser,
 } from "@tabler/icons-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Navigate, useLocation, useNavigate } from "react-router"
 import { ThunderSDK } from "thunder-sdk"
 import { useLoading } from "@/core/context/LoaderProvider"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+} from "@/components/ui/select"
 
 export function SelectTenant() {
   const { setLoading } = useLoading()
-  const [AddTenant, setAddTenant] = React.useState(false)
+  const [AddTenant, setAddTenant] = React.useState<
+    { _id?: string; logo?: string; name: string } | undefined
+  >()
   const navigate = useNavigate()
   const { hash } = useLocation()
 
@@ -83,7 +93,7 @@ export function SelectTenant() {
               <Button
                 variant="secondary"
                 size="icon-sm"
-                onClick={() => setAddTenant(!AddTenant)}
+                onClick={() => setAddTenant({ name: "" })}
               >
                 <IconPlus />
               </Button>
@@ -96,8 +106,7 @@ export function SelectTenant() {
                   variant="muted"
                   size="xs"
                   key={tenant._id as string}
-                  className="mb-1 first:rounded-b-lg last:rounded-t-lg cursor-pointer"
-                  onClick={() => navigate(`/${tenant._id}`)}
+                  className="mb-1 cursor-pointer first:rounded-b-lg last:rounded-t-lg"
                 >
                   <ItemMedia variant="default">
                     <Avatar size="lg">
@@ -111,7 +120,11 @@ export function SelectTenant() {
                     </Avatar>
                   </ItemMedia>
                   <ItemContent>
-                    <ItemTitle className="line-clamp-1" title={tenant.name}>
+                    <ItemTitle
+                      className="line-clamp-1"
+                      title={tenant.name}
+                      onClick={() => navigate(`/${tenant._id}`)}
+                    >
                       {tenant.name}
                     </ItemTitle>
                   </ItemContent>
@@ -130,21 +143,55 @@ export function SelectTenant() {
                     >
                       Members
                     </Button>
-                    <Button
-                      variant="destructive"
-                      size="icon-sm"
-                      onClick={async (e) => {
-                        e.stopPropagation()
-                        setLoading(true)
-                        await ThunderSDK.tenants.del({
-                          params: { id: tenant._id },
-                        })
-                        setLoading(false)
-                        refetch()
+
+                    <Select
+                      items={[
+                        { label: "Edit", value: "edit" },
+                        { label: "Delete", value: "delete" },
+                      ]}
+                      onValueChange={async (value) => {
+                        switch (value) {
+                          case "edit":
+                            setAddTenant({
+                              _id: tenant._id,
+                              logo: tenant.logo,
+                              name: tenant.name,
+                            })
+                            break
+                          case "delete":
+                            {
+                              setLoading(true)
+                              await ThunderSDK.tenants.del({
+                                params: { id: tenant._id },
+                              })
+                              setLoading(false)
+                              refetch()
+                            }
+                            break
+                        }
                       }}
                     >
-                      <IconTrash />
-                    </Button>
+                      <SelectTrigger
+                        render={
+                          <Button variant="outline" size="icon-sm">
+                            <IconDots />
+                          </Button>
+                        }
+                      ></SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Actions</SelectLabel>
+                          {[
+                            { label: "Edit", value: "edit" },
+                            { label: "Delete", value: "delete" },
+                          ].map((item) => (
+                            <SelectItem key={item.value} value={item.value}>
+                              {item.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </ItemActions>
                 </Item>
               ))}
@@ -171,16 +218,17 @@ export function SelectTenant() {
           </CardHeader>
           <CardContent>
             <TenantForm
+              data={AddTenant}
               afterSubmitSuccess={() => {
                 refetch()
-                setAddTenant(false)
+                setAddTenant(undefined)
               }}
               footerContent={() =>
                 data?.results?.length ? (
                   <Button
                     type="button"
                     variant="secondary"
-                    onClick={() => setAddTenant(false)}
+                    onClick={() => setAddTenant(undefined)}
                   >
                     Dismiss
                   </Button>
