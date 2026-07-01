@@ -150,7 +150,7 @@ export function MoreSheet({
           >
             <IconUserCircle className="size-5 shrink-0" />
             <span>{t("Account")}</span>
-          </button>
+          </Button>
 
           <Button
             variant="ghost"
@@ -159,20 +159,20 @@ export function MoreSheet({
           >
             <IconArrowsExchange className="size-5 shrink-0" />
             <span>{t("Change tenant")}</span>
-          </SheetClose>
+          </Button>
 
           <Button variant="ghost" className="justify-start">
             <IconNotification className="size-5 shrink-0" />
             <span>{t("Notifications")}</span>
-          </button>
+          </Button>
 
           {/* change language */}
-          <button
-            type="button"
+          <Button
+            variant="ghost"
             onClick={() =>
               i18n.changeLanguage(i18n.language === "en" ? "ar" : "en")
             }
-            className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent/60"
+            className="justify-between"
           >
             <div className="flex items-center gap-3">
               <IconLanguage className="size-5 shrink-0" />
@@ -182,12 +182,13 @@ export function MoreSheet({
             </div>
 
             <IconArrowsExchange className="size-4 text-muted-foreground" />
-          </button>
+          </Button>
 
 
-          <button
-            type="button"
+          <Button
+            variant="ghost"
             onClick={toggleTheme}
+             className="justify-start"
           >
             {resolvedTheme === "dark" ? (
               <IconSun className="size-5 shrink-0" />
@@ -199,7 +200,7 @@ export function MoreSheet({
                 ? t("Light mode")
                 : t("Dark mode")}
             </span>
-          </button>
+          </Button>
         </div>
 
         <Separator />
