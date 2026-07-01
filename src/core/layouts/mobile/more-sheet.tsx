@@ -43,7 +43,7 @@ export function MoreSheet({
   const [open, setOpen] = React.useState(false)
   const { resolvedTheme, setTheme } = useTheme()
   const logout = useLogout()
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
 
   const _me = React.useCallback(
     async ({ signal }: { signal?: AbortSignal }) => {
@@ -168,13 +168,13 @@ export function MoreSheet({
           {/* change language */}
           <Button
             variant="ghost"
-            onClick={() => i18n.changeLanguage(i18next.language === "en" ? "ar" : "en")}
+            onClick={() => i18next.changeLanguage(i18next.language === "en" ? "ar" : "en")}
             className="justify-between"
           >
             <div className="flex items-center gap-3">
               <IconLanguage className="size-5 shrink-0" />
               <span>
-                {i18n.language === "en" ? t("English") : t("Arabic")}
+                {i18next.language === "en" ? t("English") : t("Arabic")}
               </span>
             </div>
 
