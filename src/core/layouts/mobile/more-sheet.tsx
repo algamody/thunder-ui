@@ -3,7 +3,6 @@ import { useNavigate } from "react-router"
 import {
   IconAlertCircle,
   IconArrowsExchange,
-  IconCheck,
   IconDotsCircleHorizontal,
   IconLanguage,
   IconLogout,
@@ -11,7 +10,6 @@ import {
   IconNotification,
   IconSun,
   IconUserCircle,
-  IconWorld,
 } from "@tabler/icons-react"
 import { ThunderSDK } from "thunder-sdk"
 
