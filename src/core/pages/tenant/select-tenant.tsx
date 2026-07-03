@@ -35,6 +35,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Navigate, useLocation, useNavigate } from "react-router"
 import { ThunderSDK } from "thunder-sdk"
 import { useLoading } from "@/core/context/LoaderProvider"
+import { useTranslation } from "react-i18next"
 import {
   Select,
   SelectContent,
@@ -102,6 +103,7 @@ function getTenantItemRevealTransition(index: number) {
 }
 
 export function SelectTenant() {
+  const { t } = useTranslation()
   const { setLoading } = useLoading()
   const [AddTenant, setAddTenant] = React.useState<
     { _id?: string; logo?: string; name: string } | undefined
@@ -130,8 +132,8 @@ export function SelectTenant() {
       {error ? (
         <Alert variant="destructive" className="max-w-md">
           <IconAlertCircle />
-          <AlertTitle>{error.name}</AlertTitle>
-          <AlertDescription>{error.message}</AlertDescription>
+          <AlertTitle>{t(error.name)}</AlertTitle>
+          <AlertDescription>{t(error.message)}</AlertDescription>
         </Alert>
       ) : null}
       {isLoading ? (
@@ -143,8 +145,8 @@ export function SelectTenant() {
               <div className="flex shrink-0 items-center gap-3">
                 <img src={Logo} alt="Logo" className="h-5 w-auto shrink-0" />
               </div>
-              <CardTitle>Select Tenant</CardTitle>
-              <CardDescription>Choose a tenant to proceed</CardDescription>
+              <CardTitle>{t("Select Tenant")}</CardTitle>
+              <CardDescription>{t("Choose a tenant to proceed")}</CardDescription>
             </div>
 
             <div className="flex w-full items-center justify-end">
@@ -211,19 +213,16 @@ export function SelectTenant() {
                               e.stopPropagation()
                               const authUrl = getAuthUrl()
 
-                              authUrl.searchParams.set("tab", "members")
-                              authUrl.searchParams.set("tenant", tenant._id as string)
-
                               window.location.href = authUrl.toString()
                             }}
                           >
-                            Members
+                            {t("Members")}
                           </Button>
 
                           <Select
                             items={[
-                              { label: "Edit", value: "edit" },
-                              { label: "Delete", value: "delete" },
+                              { label: t("Edit"), value: "edit" },
+                              { label: t("Delete"), value: "delete" },
                             ]}
                             onValueChange={async (value) => {
                               switch (value) {
@@ -256,10 +255,10 @@ export function SelectTenant() {
                             ></SelectTrigger>
                             <SelectContent>
                               <SelectGroup>
-                                <SelectLabel>Actions</SelectLabel>
+                                <SelectLabel>{t("Actions")}</SelectLabel>
                                 {[
-                                  { label: "Edit", value: "edit" },
-                                  { label: "Delete", value: "delete" },
+                                  { label: t("Edit"), value: "edit" },
+                                  { label: t("Delete"), value: "delete" },
                                 ].map((item) => (
                                   <SelectItem key={item.value} value={item.value}>
                                     {item.label}
@@ -278,8 +277,7 @@ export function SelectTenant() {
           </CardContent>
           <CardFooter className="text-center">
             <small className="text-muted-foreground">
-              Tenant selection is required so that you can access the
-              appropriate resources and settings.
+              {t("Tenant selection is required so that you can access the appropriate resources and settings.")}
             </small>
           </CardFooter>
         </Card>
@@ -290,9 +288,9 @@ export function SelectTenant() {
               <IconUser className="size-4" />
             </div>
 
-            <CardTitle>Create Tenant</CardTitle>
+            <CardTitle>{t("Create Tenant")}</CardTitle>
             <CardDescription>
-              Please fill the form to create a new tenant
+              {t("Please fill the form to create a new tenant")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -309,7 +307,7 @@ export function SelectTenant() {
                     variant="secondary"
                     onClick={() => setAddTenant(undefined)}
                   >
-                    Dismiss
+                    {t("Dismiss")}
                   </Button>
                 ) : null
               }
@@ -352,3 +350,4 @@ function CardSkeleton() {
     </Card>
   )
 }
+

@@ -52,13 +52,15 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { Container } from "@/core/custom/Container";
+} from "@/components/ui/popover"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Badge } from "@/components/ui/badge"
+import { Container } from "@/core/custom/Container"
+import { toast } from "sonner"
+import { cn } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
+import i18next from "i18next"
 import { Pagination } from "@/components/pagination";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 const columnFromModuleMetadata = async (metadata: any, resolveRef = false) => {
   const fields = await fieldsFromModuleMetadata(metadata, {
@@ -72,6 +74,7 @@ const columnFromModuleMetadata = async (metadata: any, resolveRef = false) => {
 const prepareColumns = (
   fields: TField[],
   group?: string,
+  t?: any
 ): ColumnDef<unknown, any>[] =>
   fields
     .filter((field) => field.type !== "hidden")
@@ -79,7 +82,7 @@ const prepareColumns = (
       const isAvatar = field.type === "url" && field.fieldHint === "avatar";
 
       return {
-        header: field.label ?? field.name!,
+        header: field.label ? t(field.label) : (field.name ? t(field.name) : ""),
         accessorKey: field.name!,
         size: isAvatar ? 120 : 220,
         minSize: 120,
@@ -124,7 +127,7 @@ const prepareColumns = (
             const value = getValue();
 
             if (value) {
-              return new Intl.DateTimeFormat("en", {
+              return new Intl.DateTimeFormat(i18next.language, {
                 dateStyle: "medium",
                 timeStyle: "short",
               }).format(new Date(value));
@@ -138,29 +141,27 @@ const prepareColumns = (
           }
 
           if (typeof value === "object") {
-            return Object.keys(value ?? {}).length === 0
-              ? (
-                "N/A"
-              )
-              : (
-                <Popover>
-                  <PopoverTrigger
-                    render={
-                      <button>
-                        <Badge>View {field.label ?? field.name}</Badge>
-                      </button>
-                    }
-                  />
-                  <PopoverContent>
-                    <ScrollArea>
-                      <pre>{JSON.stringify(value, null, 2)}</pre>
-                    </ScrollArea>
-                  </PopoverContent>
-                </Popover>
-              );
+            return Object.keys(value ?? {}).length === 0 ? (
+              t("N/A")
+            ) : (
+              <Popover>
+                <PopoverTrigger
+                  render={
+                    <button>
+                      <Badge>{t("View")} {field.label ? t(field.label) : t(field.name!)}</Badge>
+                    </button>
+                  }
+                />
+                <PopoverContent>
+                  <ScrollArea>
+                    <pre>{JSON.stringify(value, null, 2)}</pre>
+                  </ScrollArea>
+                </PopoverContent>
+              </Popover>
+            )
           }
 
-          return value ?? "N/A";
+          return value ?? t("N/A")
         },
       };
     });
@@ -173,7 +174,8 @@ export interface IListPageProps {
 const DEFAULT_LIMIT = import.meta.env.VITE_DEFAULT_PAGINATION_LIMIT ?? 100;
 
 export function ListPage({ group, name }: IListPageProps) {
-  const navigate = useNavigate();
+  const { t } = useTranslation()
+  const navigate = useNavigate()
 
   const [fetchCount, setFetchCount] = React.useState(0);
   const [fetchController, setFetchController] = React.useState<
@@ -255,8 +257,8 @@ export function ListPage({ group, name }: IListPageProps) {
     isLoading: getLoading,
     refetch: refetchGet,
   } = use(get, {
-    manualTrigger: isCard, // if Cards component exists, we want to manually trigger the fetch after columns are set, to avoid fetching data twice
-  });
+    manualTrigger: isCard,
+  })
 
   const error = countError || getError;
   const isLoading = !!!getData?.results.length && getLoading;
@@ -325,15 +327,15 @@ export function ListPage({ group, name }: IListPageProps) {
             enableResizing: false,
             enablePinning: false,
           },
-          ...prepareColumns(fields, group),
+          ...prepareColumns(fields, group, t),
         ],
         columnResizeMode: "onChange",
         getCoreRowModel: getCoreRowModel(),
         enableRowSelection: true,
       }),
-      [getData, fields, group],
-    ),
-  );
+      [getData, fields, group, t]
+    )
+  )
 
   const selectedRows = table.getFilteredSelectedRowModel().rows;
 
@@ -363,8 +365,8 @@ export function ListPage({ group, name }: IListPageProps) {
           <Container className="mb-2">
             <Alert variant="destructive">
               <IconAlertCircle />
-              <AlertTitle>Error Occurred!</AlertTitle>
-              <AlertDescription>{error.message}</AlertDescription>
+              <AlertTitle>{t("Error Occurred!")}</AlertTitle>
+              <AlertDescription>{t(error.message)}</AlertDescription>
             </Alert>
           </Container>
         )}
@@ -402,7 +404,7 @@ export function ListPage({ group, name }: IListPageProps) {
                             onCheckedChange={(value) =>
                               table.toggleAllColumnsVisible(!!value)}
                           >
-                            Select all
+                            {t("Select all")}
                           </DropdownMenuCheckboxItem>
                           {table
                             .getAllColumns()
@@ -426,7 +428,9 @@ export function ListPage({ group, name }: IListPageProps) {
                     )
                     : null}
                   {allowCreate && (
-                    <Button onClick={() => navigate("form")}>Create</Button>
+                    <Button onClick={() => navigate("form")}>
+                      {t("Create")}
+                    </Button>
                   )}
                   {!!Cards && (
                     <ToggleGroup
@@ -451,7 +455,7 @@ export function ListPage({ group, name }: IListPageProps) {
                     </ToggleGroup>
                   )}
                 </>
-              )}
+            )}
           </div>
         </Container>
 
@@ -495,35 +499,32 @@ export function ListPage({ group, name }: IListPageProps) {
               {isMobileLayout() && totalPages > 1 && (
                 <div className="h-20"></div>
               )}
-            </>
-          )
-          : null}
+          </>
+        ) : null}
 
-        {!isCard
-          ? (
-            <Container className="flex h-full min-h-0 flex-1 flex-col gap-3">
-              {isLoading
-                ? <TableSkeleton />
-                : getData?.results.length === 0 && !isLoading
-                ? (
-                  <Empty>
-                    <EmptyHeader>
-                      <EmptyMedia variant="icon" className="bg-destructive/10">
-                        <IconXMark className="text-destructive" />
-                      </EmptyMedia>
-                      <EmptyTitle>No results!</EmptyTitle>
-                      <EmptyDescription>
-                        adjust or clear filters to reveal issues.
-                      </EmptyDescription>
-                    </EmptyHeader>
-                  </Empty>
-                )
-                : <DataTable table={table} />}
+        {!isCard ? (
+          <Container className="flex h-full min-h-0 flex-1 flex-col gap-3">
+            {isLoading ? (
+              <TableSkeleton />
+            ) : getData?.results.length === 0 && !isLoading ? (
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon" className="bg-destructive/10">
+                    <IconXMark className="text-destructive" />
+                  </EmptyMedia>
+                  <EmptyTitle>{t("No results!")}</EmptyTitle>
+                  <EmptyDescription>
+                    {t("adjust or clear filters to reveal issues.")}
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            ) : (
+              <DataTable table={table} />
+            )}
 
-              {isMobileLayout() && <div className="h-20"></div>}
-            </Container>
-          )
-          : null}
+            {isMobileLayout() && <div className="h-20"></div>}
+          </Container>
+        ) : null}
       </div>
 
       <ActionBar
@@ -535,7 +536,7 @@ export function ListPage({ group, name }: IListPageProps) {
       >
         <div className="flex w-full items-center justify-between gap-2 rounded-full border bg-background p-3 dark:bg-black">
           <p className="text-sm md:ltr:ml-3 md:rtl:mr-3">
-            {selectedRows.length} <span className="font-medium">selected</span>
+            {selectedRows.length} <span className="font-medium">{t("selected")}</span>
           </p>
 
           <div className="flex items-center gap-2">
@@ -569,10 +570,10 @@ export function ListPage({ group, name }: IListPageProps) {
                     params: { id },
                   });
                 }
-                toast.success(`Deleted successfully.`);
-                table.resetRowSelection();
-                await get.invalidate();
-                dismiss();
+                toast.success(t("Deleted successfully."))
+                table.resetRowSelection()
+                await get.invalidate()
+                dismiss()
               }}
             />
 
@@ -588,5 +589,6 @@ export function ListPage({ group, name }: IListPageProps) {
         </div>
       </ActionBar>
     </React.Fragment>
-  );
+  )
 }
+
