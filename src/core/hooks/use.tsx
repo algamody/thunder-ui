@@ -16,6 +16,14 @@ type TUseOpts = {
   manualTrigger?: boolean
 }
 
+type RefetchResult = {
+  controller: AbortController
+}
+
+type RefetchFn = (opts?: {
+  controller: AbortController
+}) => Promise<RefetchResult>
+
 export function use<T>(
   request?: TRequestCallback<T> | TRequester<T>,
   options?: TUseOpts
@@ -139,10 +147,10 @@ export function use<T>(
   }, [count, SendRequest, options?.manualTrigger])
 
   const refetch = React.useCallback(
-    (opts?: { controller: AbortController }) => {
+    async (opts?: { controller: AbortController }) => {
       const controller = opts?.controller ?? new AbortController()
 
-      SendRequest({ signal: controller.signal })
+      await SendRequest({ signal: controller.signal })
 
       return {
         controller,
@@ -163,25 +171,19 @@ export function use<T>(
             isLoading: true
             data: null
             error: null
-            refetch: (opts?: { controller: AbortController }) => {
-              controller: AbortController
-            }
+            refetch: RefetchFn
           }
         | {
             isLoading: false
             data: T
             error: null
-            refetch: (opts?: { controller: AbortController }) => {
-              controller: AbortController
-            }
+            refetch: RefetchFn
           }
         | {
             isLoading: false
             data: null
             error: Error
-            refetch: (opts?: { controller: AbortController }) => {
-              controller: AbortController
-            }
+            refetch: RefetchFn
           },
     []
   )

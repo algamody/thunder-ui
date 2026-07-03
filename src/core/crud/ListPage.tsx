@@ -59,6 +59,7 @@ import { Container } from "@/core/custom/Container"
 import { Pagination } from "@/components/pagination"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { Refresher } from "@/components/refresher"
 
 const columnFromModuleMetadata = async (metadata: any, resolveRef = false) => {
   const fields = await fieldsFromModuleMetadata(metadata, {
@@ -334,11 +335,6 @@ export function ListPage({ group, name }: IListPageProps) {
 
   const selectedRows = table.getFilteredSelectedRowModel().rows
 
-  // const totalPages = React.useMemo(
-  //   () => Math.ceil(countData?.count ?? 0 / DEFAULT_LIMIT),
-  //   [countData]
-  // )
-
   React.useEffect(() => {
     ;(async () => {
       setFields(await columnFromModuleMetadata(metadata))
@@ -346,228 +342,245 @@ export function ListPage({ group, name }: IListPageProps) {
     })()
   }, [metadata])
 
+  const totalPages = React.useMemo(
+    () => Math.ceil(countData?.count ?? 0 / DEFAULT_LIMIT),
+    [countData]
+  )
+
   return (
     <React.Fragment>
-      <div
-        className={"relative flex h-full min-h-0 flex-1 flex-col gap-3 pt-2"}
+      <Refresher
+        onRefresh={() => {
+          return Promise.allSettled([refetchCount(), refetchGet()])
+        }}
       >
-        {error && (
-          <Container className="mb-2">
-            <Alert variant="destructive">
-              <IconAlertCircle />
-              <AlertTitle>Error Occurred!</AlertTitle>
-              <AlertDescription>{error.message}</AlertDescription>
-            </Alert>
-          </Container>
-        )}
-        <Container className="flex flex-wrap-reverse items-center justify-between gap-3 lg:flex-nowrap">
-          <Filters fields={fields} filters={filters} onChange={setFilters} />
+        <div
+          className={"relative flex h-full min-h-0 flex-1 flex-col gap-3 pt-2"}
+        >
+          {error && (
+            <Container className="mb-2">
+              <Alert variant="destructive">
+                <IconAlertCircle />
+                <AlertTitle>Error Occurred!</AlertTitle>
+                <AlertDescription>{error.message}</AlertDescription>
+              </Alert>
+            </Container>
+          )}
+          <Container className="flex flex-wrap-reverse items-center justify-between gap-3 lg:flex-nowrap">
+            <Filters fields={fields} filters={filters} onChange={setFilters} />
 
-          <div className="flex flex-1 shrink-0 grow items-center justify-end gap-3">
-            {isLoading ? (
-              <>
-                <Skeleton className="h-9 w-18" />
-                <Skeleton className="h-9 w-18" />
-              </>
-            ) : (
-              <>
-                {getData?.results.length && !isCard ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      render={
-                        <Button variant="outline" size="icon">
-                          <IconTableColumn />
-                        </Button>
-                      }
-                    ></DropdownMenuTrigger>
-
-                    <DropdownMenuContent
-                      align="end"
-                      className="no-scrollbar max-h-100 overflow-auto"
-                    >
-                      <DropdownMenuCheckboxItem
-                        checked={table.getIsAllColumnsVisible()}
-                        onCheckedChange={(value) =>
-                          table.toggleAllColumnsVisible(!!value)
+            <div className="flex flex-1 shrink-0 grow items-center justify-end gap-3">
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-9 w-18" />
+                  <Skeleton className="h-9 w-18" />
+                </>
+              ) : (
+                <>
+                  {getData?.results.length && !isCard ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button variant="outline" size="icon">
+                            <IconTableColumn />
+                          </Button>
                         }
+                      ></DropdownMenuTrigger>
+
+                      <DropdownMenuContent
+                        align="end"
+                        className="no-scrollbar max-h-100 overflow-auto"
                       >
-                        Select all
-                      </DropdownMenuCheckboxItem>
-                      {table
-                        .getAllColumns()
-                        .filter((col) => col.getCanHide())
-                        .map((column) => {
-                          return (
-                            <DropdownMenuCheckboxItem
-                              key={column.id}
-                              checked={column.getIsVisible()}
-                              onCheckedChange={(value) =>
-                                column.toggleVisibility(!!value)
-                              }
-                            >
-                              <span className="line-clamp-1 truncate">
-                                {column.columnDef.header as string}
-                              </span>
-                            </DropdownMenuCheckboxItem>
-                          )
-                        })}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : null}
-                {allowCreate && (
-                  <Button onClick={() => navigate("form")}>Create</Button>
-                )}
-                {!!Cards && (
-                  <ToggleGroup
-                    value={view}
-                    onValueChange={(view) => {
-                      setView(view)
+                        <DropdownMenuCheckboxItem
+                          checked={table.getIsAllColumnsVisible()}
+                          onCheckedChange={(value) =>
+                            table.toggleAllColumnsVisible(!!value)
+                          }
+                        >
+                          Select all
+                        </DropdownMenuCheckboxItem>
+                        {table
+                          .getAllColumns()
+                          .filter((col) => col.getCanHide())
+                          .map((column) => {
+                            return (
+                              <DropdownMenuCheckboxItem
+                                key={column.id}
+                                checked={column.getIsVisible()}
+                                onCheckedChange={(value) =>
+                                  column.toggleVisibility(!!value)
+                                }
+                              >
+                                <span className="line-clamp-1 truncate">
+                                  {column.columnDef.header as string}
+                                </span>
+                              </DropdownMenuCheckboxItem>
+                            )
+                          })}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : null}
+                  {allowCreate && (
+                    <Button onClick={() => navigate("form")}>Create</Button>
+                  )}
+                  {!!Cards && (
+                    <ToggleGroup
+                      value={view}
+                      onValueChange={(view) => {
+                        setView(view)
 
-                      if (view === "table") {
-                        setFetchCount(0)
-                        setFetchController(null)
-                        setProject({})
-                        setSort({})
-                      }
-                    }}
-                  >
-                    <ToggleGroupItem value="cards" aria-label="Cards view">
-                      <IconLayoutGrid className="size-4" />
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="table" aria-label="Table view">
-                      <IconTable className="size-4" />
-                    </ToggleGroupItem>
-                  </ToggleGroup>
-                )}
-              </>
-            )}
-          </div>
-        </Container>
+                        if (view === "table") {
+                          setFetchCount(0)
+                          setFetchController(null)
+                          setProject({})
+                          setSort({})
+                        }
+                      }}
+                    >
+                      <ToggleGroupItem value="cards" aria-label="Cards view">
+                        <IconLayoutGrid className="size-4" />
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="table" aria-label="Table view">
+                        <IconTable className="size-4" />
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  )}
+                </>
+              )}
+            </div>
+          </Container>
 
-        {isCard ? (
-          <>
-            <Cards
-              isLoading={isLoading}
-              data={getData?.results ?? []}
-              fetcher={fetcher}
-              selectedIds={selectedRows.map((v) => (v.original as any)._id)}
-              toggleSelect={(id) => {
-                const row = table
-                  .getRowModel()
-                  .rows.find((v) => (v.original as any)._id === id)
+          {isCard ? (
+            <>
+              <Cards
+                isLoading={isLoading}
+                data={getData?.results ?? []}
+                fetcher={fetcher}
+                selectedIds={selectedRows.map((v) => (v.original as any)._id)}
+                toggleSelect={(id) => {
+                  const row = table
+                    .getRowModel()
+                    .rows.find((v) => (v.original as any)._id === id)
 
-                if (row) row.toggleSelected()
-                else table.toggleAllRowsSelected()
-              }}
-            />
-
-            {countLoading && !countData ? (
-              <div className="flex items-center justify-center">
-                <Skeleton className="h-9 w-sm" />
-              </div>
-            ) : countData?.count ? (
-              <Pagination
-                active={page}
-                limit={DEFAULT_LIMIT}
-                total={countData.count ?? 0}
-                onChange={(page) => {
-                  setPage(page)
+                  if (row) row.toggleSelected()
+                  else table.toggleAllRowsSelected()
                 }}
               />
-            ) : null}
 
-            {isMobileLayout() && !!countData?.count && (
-              <div className="h-20"></div>
-            )}
-          </>
-        ) : null}
+              {countLoading && !countData ? (
+                <div className="flex items-center justify-center">
+                  <Skeleton className="h-9 w-sm" />
+                </div>
+              ) : countData?.count ? (
+                <Pagination
+                  active={page}
+                  limit={DEFAULT_LIMIT}
+                  total={countData.count ?? 0}
+                  onChange={(page) => {
+                    setPage(page)
+                  }}
+                />
+              ) : null}
 
-        {!isCard ? (
-          <Container className="flex h-full min-h-0 flex-1 flex-col gap-3">
-            {isLoading ? (
-              <TableSkeleton />
-            ) : getData?.results.length === 0 && !isLoading ? (
-              <Empty>
-                <EmptyHeader>
-                  <EmptyMedia variant="icon" className="bg-destructive/10">
-                    <IconXMark className="text-destructive" />
-                  </EmptyMedia>
-                  <EmptyTitle>No results!</EmptyTitle>
-                  <EmptyDescription>
-                    adjust or clear filters to reveal issues.
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            ) : (
-              <DataTable table={table} />
-            )}
+              {isMobileLayout() && totalPages > 1 && (
+                <div className="h-20"></div>
+              )}
+            </>
+          ) : null}
 
-            {isMobileLayout() && <div className="h-20"></div>}
-          </Container>
-        ) : null}
-      </div>
+          {!isCard ? (
+            <Container className="flex h-full min-h-0 flex-1 flex-col gap-3">
+              {isLoading ? (
+                <TableSkeleton />
+              ) : getData?.results.length === 0 && !isLoading ? (
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon" className="bg-destructive/10">
+                      <IconXMark className="text-destructive" />
+                    </EmptyMedia>
+                    <EmptyTitle>No results!</EmptyTitle>
+                    <EmptyDescription>
+                      adjust or clear filters to reveal issues.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
+              ) : (
+                <DataTable table={table} />
+              )}
 
-      <ActionBar
-        containerClassName={cn(
-          "fixed inset-x-3 z-20 mx-auto max-w-md shadow-sm",
-          !isMobileLayout() ? "bottom-20" : ""
-        )}
-        data-open={!!selectedRows.length}
-      >
-        <div className="flex w-full items-center justify-between gap-2 rounded-full border bg-background p-3 dark:bg-black">
-          <p className="text-sm md:ltr:ml-3 md:rtl:mr-3">
-            {selectedRows.length} <span className="font-medium">selected</span>
-          </p>
+              {isMobileLayout() && totalPages > 1 && (
+                <div className="h-20"></div>
+              )}
+            </Container>
+          ) : null}
+        </div>
 
-          <div className="flex items-center gap-2">
-            {selectedRows.length === 1 && (
+        <ActionBar
+          containerClassName={cn(
+            "fixed inset-x-3 z-20 mx-auto max-w-md shadow-sm",
+            !isMobileLayout() ? "bottom-20" : ""
+          )}
+          data-open={!!selectedRows.length}
+        >
+          <div className="flex w-full items-center justify-between gap-2 rounded-full border bg-background p-3 dark:bg-black">
+            <p className="text-sm md:ltr:ml-3 md:rtl:mr-3">
+              {selectedRows.length}{" "}
+              <span className="font-medium">selected</span>
+            </p>
+
+            <div className="flex items-center gap-2">
+              {selectedRows.length === 1 && (
+                <Button
+                  size="icon-sm"
+                  variant="outline"
+                  onClick={() => {
+                    const row = selectedRows.map(
+                      (row) => row.original
+                    )[0] as any
+                    const fallbackName =
+                      row.name || row.title || row.label || ""
+
+                    navigate(`form/${row._id}`, {
+                      state: { name: fallbackName },
+                    })
+                  }}
+                >
+                  <IconEdit />
+                </Button>
+              )}
+
+              <ConfirmationDialog
+                trigger={
+                  <Button size="sm" variant="destructive">
+                    <IconTrash />
+                  </Button>
+                }
+                onConfirm={async (dismiss) => {
+                  const ids = selectedRows.map((row: any) => row.original._id)
+                  for (const id of ids) {
+                    await ThunderSDK.getModule(name).del({
+                      params: { id },
+                    })
+                  }
+                  toast.success(`Deleted successfully.`)
+                  table.resetRowSelection()
+                  await get.invalidate()
+                  dismiss()
+                }}
+              />
+
               <Button
                 size="icon-sm"
-                variant="outline"
-                onClick={() => {
-                  const row = selectedRows.map((row) => row.original)[0] as any
-                  const fallbackName = row.name || row.title || row.label || ""
-
-                  navigate(`form/${row._id}`, {
-                    state: { name: fallbackName },
-                  })
-                }}
+                variant="secondary"
+                onClick={() => table.resetRowSelection()}
+                aria-label="Clear selection"
               >
-                <IconEdit />
+                <IconX />
               </Button>
-            )}
-
-            <ConfirmationDialog
-              trigger={
-                <Button size="sm" variant="destructive">
-                  <IconTrash />
-                </Button>
-              }
-              onConfirm={async (dismiss) => {
-                const ids = selectedRows.map((row: any) => row.original._id)
-                for (const id of ids) {
-                  await ThunderSDK.getModule(name).del({
-                    params: { id },
-                  })
-                }
-                toast.success(`Deleted successfully.`)
-                table.resetRowSelection()
-                await get.invalidate()
-                dismiss()
-              }}
-            />
-
-            <Button
-              size="icon-sm"
-              variant="secondary"
-              onClick={() => table.resetRowSelection()}
-              aria-label="Clear selection"
-            >
-              <IconX />
-            </Button>
+            </div>
           </div>
-        </div>
-      </ActionBar>
+        </ActionBar>
+      </Refresher>
     </React.Fragment>
   )
 }
