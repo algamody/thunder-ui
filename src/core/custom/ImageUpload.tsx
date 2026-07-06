@@ -115,7 +115,7 @@ export function ImageUpload({
                 type="button"
                 aria-label="Remove image"
                 size="icon-xs"
-                className="absolute -top-1 -right-1 opacity-0 transition-opacity group-hover:opacity-100"
+                className="absolute -top-1 -end-1 opacity-0 transition-opacity group-hover:opacity-100"
                 onClick={() => {
                   removeFile(f.id)
                   onRemove?.(f.id)
@@ -216,7 +216,7 @@ export function ImageUpload({
               signalRef.current?.abort()
             }}
           >
-            <IconX className="mr-1 size-3" />
+            <IconX className="me-1 size-3" />
             Remove
           </Button>
         </div>

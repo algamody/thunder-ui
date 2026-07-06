@@ -1,3 +1,4 @@
+import type { AxiosError, AxiosResponse } from "axios";
 import { ThunderSDK } from "thunder-sdk";
 import { toast } from "sonner";
 
@@ -30,8 +31,8 @@ export const refreshThunder = async () => {
     await initThunder();
 
     ThunderSDK._axios?.interceptors.response.use(
-        (response) => response,
-        async (error) => {
+        (response: AxiosResponse) => response,
+        async (error: AxiosError<{ messages?: { message: string }[] }>) => {
             if (error.response?.data?.messages?.length) {
                 error.response.data.messages.map((v: { message: string }) =>
                     toast.error(v.message)

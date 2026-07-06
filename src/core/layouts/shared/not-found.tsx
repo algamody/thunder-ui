@@ -8,8 +8,10 @@ import {
 } from "@/components/ui/empty"
 import { IconMoodPuzzled } from "@tabler/icons-react"
 import { Link } from "react-router"
+import { useTranslation } from "react-i18next"
 
 export function NotFound() {
+  const { t } = useTranslation()
   return (
     <div className="flex h-full min-h-svh w-full flex-col items-center justify-center">
       <Empty>
@@ -24,7 +26,7 @@ export function NotFound() {
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent className="flex-row justify-center gap-2">
-          <Link to="/">Go Back</Link>
+          <Link to="/">{t("Go Back")}</Link>
         </EmptyContent>
       </Empty>
     </div>

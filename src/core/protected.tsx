@@ -11,8 +11,10 @@ import { isAxiosError } from "axios"
 import { useAuth, useOptionalAuth } from "./context/AuthProvider"
 import { useLoading } from "./context/LoaderProvider"
 import { Spinner } from "@/components/ui/spinner"
+import { useTranslation } from "react-i18next"
 
 function ProtectedWithOAuth({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation()
   const [ready, setReady] = React.useState(false)
   const [error, setError] = React.useState<Error | null>(null)
 
@@ -73,9 +75,9 @@ function ProtectedWithOAuth({ children }: { children: React.ReactNode }) {
   if (requireSignIn) {
     return (
       <LoadingScreen
-        title="Sign in to continue"
+        title={t("Sign in to continue")}
         icon={IconLogin}
-        description="Click the following button to sign into your account"
+        description={t("Click the following button to sign into your account")}
       >
         <Button onClick={handleSignIn}>
           {isLoading && <Spinner />}
@@ -88,7 +90,7 @@ function ProtectedWithOAuth({ children }: { children: React.ReactNode }) {
   if (systemError) {
     return (
       <LoadingScreen
-        title="Something went wrong!"
+        title={t("Something went wrong!")}
         icon={IconBug}
         description={
           systemError?.message ??
@@ -98,7 +100,7 @@ function ProtectedWithOAuth({ children }: { children: React.ReactNode }) {
         <Button variant="outline" onClick={handleSignInAgain}>
           {isLoading && <Spinner />} Sign in again?
         </Button>
-        <Button onClick={handleRefresh}>Retry</Button>
+        <Button onClick={handleRefresh}>{t("Retry")}</Button>
       </LoadingScreen>
     )
   }
@@ -106,9 +108,9 @@ function ProtectedWithOAuth({ children }: { children: React.ReactNode }) {
   if (loadingPermissions)
     return (
       <LoadingScreen
-        title="Getting things ready!"
+        title={t("Getting things ready!")}
         icon={IconLoader}
-        description="We are loading your permissions..."
+        description={t("We are loading your permissions...")}
       >
         <Button variant="outline" onClick={handleLogout}>
           Logout
@@ -120,6 +122,7 @@ function ProtectedWithOAuth({ children }: { children: React.ReactNode }) {
 }
 
 function ProtectedWithSession({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation()
   const [ready, setReady] = React.useState(false)
   const [loggedIn, setLoggedIn] = React.useState(true)
   const [error, setError] = React.useState<Error | null>(null)
@@ -169,9 +172,9 @@ function ProtectedWithSession({ children }: { children: React.ReactNode }) {
   if (!loggedIn) {
     return (
       <LoadingScreen
-        title="Sign in to continue"
+        title={t("Sign in to continue")}
         icon={IconLogin}
-        description="Click the following button to sign into your account"
+        description={t("Click the following button to sign into your account")}
       >
         <Button
           onClick={() => {
@@ -200,7 +203,7 @@ function ProtectedWithSession({ children }: { children: React.ReactNode }) {
   if (error) {
     return (
       <LoadingScreen
-        title="Something went wrong!"
+        title={t("Something went wrong!")}
         icon={IconBug}
         description={
           error?.message ??
@@ -210,7 +213,7 @@ function ProtectedWithSession({ children }: { children: React.ReactNode }) {
         <Button variant="outline" onClick={gotoAccount}>
           Goto Account
         </Button>
-        <Button onClick={handleRefresh}>Retry</Button>
+        <Button onClick={handleRefresh}>{t("Retry")}</Button>
       </LoadingScreen>
     )
   }
@@ -218,9 +221,9 @@ function ProtectedWithSession({ children }: { children: React.ReactNode }) {
   if (!ready)
     return (
       <LoadingScreen
-        title="Getting things ready!"
+        title={t("Getting things ready!")}
         icon={IconLoader}
-        description="We are loading your permissions..."
+        description={t("We are loading your permissions...")}
       ></LoadingScreen>
     )
 

@@ -284,7 +284,7 @@ export function DataTable({ table, endReached }: DataTableProps) {
 
                     {header.column.getCanResize() && (
                       <div
-                        className="group absolute top-0 right-0 z-10 flex h-full cursor-col-resize touch-none items-center justify-center transition duration-300 ease-in-out select-none before:absolute before:inset-y-0 before:w-px before:translate-x-px"
+                        className="group absolute top-0 end-0 z-10 flex h-full cursor-col-resize touch-none items-center justify-center transition duration-300 ease-in-out select-none before:absolute before:inset-y-0 before:w-px before:translate-x-px"
                         onDoubleClick={() => header.column.resetSize()}
                         onMouseDown={header.getResizeHandler()}
                         onTouchStart={header.getResizeHandler()}

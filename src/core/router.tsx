@@ -102,9 +102,15 @@ export const coreRoutes = Object.entries(
   routes.push({
     path: "",
     Component: () => {
-      const indexRoute = routes.filter((route) =>
+      const displayable = routes.filter((route) =>
         allowDisplayRoute(route.display)
-      )[0]
+      )
+      // Prefer the primary route over secondary "subscription/trigger" ones so
+      // e.g. the Orders group lands on the orders list, not subscriptions.
+      const indexRoute =
+        displayable.find(
+          (route) => !/subscription|trigger/i.test(String(route.path))
+        ) ?? displayable[0]
 
       return <Navigate to={indexRoute?.path ?? "notFound"} />
     },

@@ -91,7 +91,7 @@ export function AvatarUpload({
           <Button
             aria-label="Remove image"
             size="icon-xs"
-            className="absolute -top-1 -right-1"
+            className="absolute -top-1 -end-1"
             onClick={() => {
               removeFile(files[0]?.id)
               onRemove?.()

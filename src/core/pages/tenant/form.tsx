@@ -13,6 +13,7 @@ import { handleUpload } from "@/core/lib/utils"
 import React from "react"
 import { Controller, useForm, type SubmitHandler } from "react-hook-form"
 import { ThunderSDK } from "thunder-sdk"
+import { useTranslation } from "react-i18next"
 
 const DefaultForm = {
   _id: undefined,
@@ -30,6 +31,7 @@ export default function TenantForm({
   footerContent?: () => React.ReactNode
 }) {
   const { setLoading } = useLoading()
+  const { t } = useTranslation()
 
   const _me = React.useCallback(
     async ({ signal }: { signal?: AbortSignal }) => {
@@ -100,7 +102,7 @@ export default function TenantForm({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="fname">Tenant Name</FieldLabel>
+          <FieldLabel htmlFor="fname">{t("Tenant Name")}</FieldLabel>
           <Input
             id="name"
             type="text"

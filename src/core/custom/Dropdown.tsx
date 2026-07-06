@@ -7,8 +7,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useTranslation } from "react-i18next"
 
 export const Dropdown: typeof Select = (props) => {
+  const { t } = useTranslation()
   const items =
     typeof props.items === "object" && !(props.items instanceof Array)
       ? Object.entries(props.items).map(([value, label]) => ({ label, value }))
@@ -17,7 +19,7 @@ export const Dropdown: typeof Select = (props) => {
   return (
     <Select {...props}>
       <SelectTrigger className="w-full max-w-48">
-        <SelectValue placeholder="Select" />
+        <SelectValue placeholder={t("Select")} />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>

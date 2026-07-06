@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import React from "react"
 import { InputGroup } from "@/components/ui/input-group"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
 
 export type TTagValue = "text" | "number" | "url" | "email" | "phone"
 
@@ -34,6 +35,7 @@ export function Tag({
 }
 
 export function TagInput() {
+  const { t } = useTranslation()
   const { values, onValueChange, ...inputProps } = useTag()
 
   return (
@@ -62,7 +64,7 @@ export function TagInput() {
       >
         <Input
           {...inputProps}
-          placeholder="Enter your tag..."
+          placeholder={t("Enter your tag...")}
           className="bg-transparent! focus-visible:border-transparent! focus-visible:ring-3 focus-visible:ring-transparent!"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
