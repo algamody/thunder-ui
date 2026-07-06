@@ -15,11 +15,11 @@ import { routes } from "@/overrides/routes";
 
 export type TRouteObject = {
   name?: string;
-  index?: number | (() => number);
   group?: string;
   icon?: TablerIcon;
   display?: boolean | (() => boolean);
   children?: TRouteObject[];
+  index?: number | (() => number);
 } & RouteObject;
 
 const moduleNames = Array.from(
