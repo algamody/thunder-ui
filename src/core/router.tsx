@@ -15,11 +15,11 @@ import { routes } from "@/overrides/routes";
 
 export type TRouteObject = {
   name?: string;
+  priority?: number | (() => number);
   group?: string;
   icon?: TablerIcon;
   display?: boolean | (() => boolean);
   children?: TRouteObject[];
-  index?: number | (() => number);
 } & RouteObject;
 
 const moduleNames = Array.from(
@@ -103,13 +103,12 @@ export const coreRoutes = Object.entries(
     Component: () => {
       const displayable = routes.filter((route) =>
         allowDisplayRoute(route.display)
-      )
+      );
       // Prefer the primary route over secondary "subscription/trigger" ones so
       // e.g. the Orders group lands on the orders list, not subscriptions.
-      const indexRoute =
-        displayable.find(
-          (route) => !/subscription|trigger/i.test(String(route.path))
-        ) ?? displayable[0]
+      const indexRoute = displayable.find(
+        (route) => !/subscription|trigger/i.test(String(route.path)),
+      ) ?? displayable[0];
 
       return <Navigate to={indexRoute?.path ?? "notFound"} />;
     },

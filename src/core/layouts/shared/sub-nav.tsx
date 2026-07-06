@@ -1,32 +1,32 @@
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { IconAlertCircle, type TablerIcon } from "@tabler/icons-react"
-import { useLocation, useNavigate } from "react-router"
-import { useTranslation } from "react-i18next"
-import React from "react"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { IconAlertCircle, type TablerIcon } from "@tabler/icons-react";
+import { useLocation, useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
+import React from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 export type TNav = {
   title: string;
   icon?: TablerIcon;
   path?: string;
   parent?: string;
-  index?: number | (() => number);
+  priority?: number | (() => number);
 };
 
 export function SubNav({
   navMenu,
   compact,
 }: {
-  navMenu: TNav[]
+  navMenu: TNav[];
   /** Mobile-only: for exactly 2 items, render the first as a main pill and the
    *  rest as small side icon buttons instead of an equal-width tab strip. */
-  compact?: boolean
+  compact?: boolean;
 }) {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { t } = useTranslation()
-  const tabRef = React.useRef<HTMLDivElement>(null)
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
+  const tabRef = React.useRef<HTMLDivElement>(null);
 
   const { tenantId, activeParent } = React.useMemo(() => {
     const [tenantId, activeParent] = location.pathname
@@ -71,18 +71,19 @@ export function SubNav({
   if (!tenantId || !activeParent) return null;
 
   const go = (path?: string) =>
-    navigate(`/${tenantId}/${activeParent}/${path}`, { viewTransition: true })
+    navigate(`/${tenantId}/${activeParent}/${path}`, { viewTransition: true });
 
   // Mobile compact: one item is the main tab; the "subscriptions" item becomes a
   // single toggle button that redirects to that section (and back).
   if (compact && navMenu.length === 2) {
-    const side =
-      navMenu.find((n) => /subscription/i.test(`${n.path}${n.title}`)) ??
-      navMenu[1]
-    const main = navMenu.find((n) => n !== side) ?? navMenu[0]
-    const MainIcon = main.icon ?? IconAlertCircle
-    const SideIcon = side.icon ?? IconAlertCircle
-    const onSide = activeTab === side.path
+    const side = navMenu.find((n) =>
+      /subscription/i.test(`${n.path}${n.title}`)
+    ) ??
+      navMenu[1];
+    const main = navMenu.find((n) => n !== side) ?? navMenu[0];
+    const MainIcon = main.icon ?? IconAlertCircle;
+    const SideIcon = side.icon ?? IconAlertCircle;
+    const onSide = activeTab === side.path;
 
     return (
       <div className="flex w-full items-center gap-2">
@@ -100,13 +101,13 @@ export function SubNav({
             "flex size-9 shrink-0 items-center justify-center rounded-full transition-colors",
             onSide
               ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground hover:text-foreground"
+              : "bg-muted text-muted-foreground hover:text-foreground",
           )}
         >
           <SideIcon className="size-4" />
         </button>
       </div>
-    )
+    );
   }
 
   return (

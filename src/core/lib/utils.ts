@@ -132,23 +132,23 @@ export function allowDisplayRoute(display?: boolean | (() => boolean)) {
 }
 
 export function getRouteSortIndex(
-  route?: Pick<TRouteObject, "index">,
+  route?: Pick<TRouteObject, "priority">,
 ): number {
-  const index = route?.index;
+  const priority = route?.priority;
 
-  if (typeof index === "number") {
-    return Number.isFinite(index) ? index : 0;
+  if (typeof priority === "number") {
+    return Number.isFinite(priority) ? priority : 0;
   }
 
-  if (typeof index === "function") {
-    const result = index();
+  if (typeof priority === "function") {
+    const result = priority();
     return typeof result === "number" && Number.isFinite(result) ? result : 0;
   }
 
   return 0;
 }
 
-export function sortRoutes<T extends TRouteObject>(routes: readonly T[]): T[] {
+export function sortRoutes<T extends TRouteObject>(routes: T[]): T[] {
   return routes
     .map((route, originalIndex) => ({
       route,
@@ -172,7 +172,7 @@ export function getNavRoutes(router: TRouteObject[]) {
   for (const route of sortRoutes(router)) {
     if (!allowDisplayRoute(route.display)) continue;
 
-    const children = sortRoutes(route.children ?? []);
+    const children = sortRoutes((route.children ?? []) as TRouteObject[]);
 
     for (const child of children) {
       if (!allowDisplayRoute(child.display)) continue;
@@ -185,7 +185,7 @@ export function getNavRoutes(router: TRouteObject[]) {
         path: parentPath,
       });
 
-      const childRoutes = sortRoutes(child.children ?? []);
+      const childRoutes = sortRoutes((child.children ?? []) as TRouteObject[]);
 
       for (const subChild of childRoutes) {
         if (!allowDisplayRoute(subChild.display)) continue;
