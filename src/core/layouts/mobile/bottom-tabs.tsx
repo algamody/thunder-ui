@@ -1,17 +1,22 @@
-import React from "react";
-import { Link, useLocation } from "react-router";
-import { IconAlertCircle, type TablerIcon } from "@tabler/icons-react";
-import { cva, type VariantProps } from "class-variance-authority";
-import { useTranslation } from "react-i18next";
+import React from "react"
+import { Link, useLocation } from "react-router"
+import {
+  IconAlertCircle,
+  IconShoppingCart,
+  type TablerIcon,
+} from "@tabler/icons-react"
+import { cva, type VariantProps } from "class-variance-authority"
+import { useTranslation } from "react-i18next"
 
-import { useLayout } from "@/core/layouts/layout-provider";
-import type { TRouteObject } from "@/core/router";
-import { allowDisplayRoute } from "@/core/lib/utils";
-import { cn } from "@/lib/utils";
+import { useLayout } from "@/core/layouts/layout-provider"
+import type { TRouteObject } from "@/core/router"
+import { allowDisplayRoute } from "@/core/lib/utils"
+import { cn } from "@/lib/utils"
 // import { useCartCount } from "@/hooks/useCart"
 // import { SheetRef } from "@/components/globalSheet"
 // import { CartSheet } from "@/store/cartsheet/sheet"
-import { MoreSheet } from "./more-sheet";
+import { MoreSheet } from "./more-sheet"
+import { useTranslation } from "react-i18next"
 
 export type TNav = {
   title: string;

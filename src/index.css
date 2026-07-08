@@ -142,4 +142,7 @@
   html {
     @apply font-sans;
   }
+    [dir="rtl"] .icon-flip-rtl {
+  transform: scaleX(-1);
+  }
 }

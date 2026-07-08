@@ -22,6 +22,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
+import { useTranslation } from "react-i18next"
 
 export interface INavMenuItem {
   title: string
@@ -42,11 +43,12 @@ export interface INavMenuProps {
 
 export function NavMenu({ name, items, onChange }: INavMenuProps) {
   const { isMobile, setOpenMobile } = useSidebar()
+  const { t } = useTranslation()
 
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
-        {name && <SidebarGroupLabel>{name}</SidebarGroupLabel>}
+        {name && <SidebarGroupLabel>{t(name)}</SidebarGroupLabel>}
         <SidebarMenu>
           {items?.map((item, idx) =>
             item.items?.length ? (
@@ -60,7 +62,7 @@ export function NavMenu({ name, items, onChange }: INavMenuProps) {
                     render={
                       <SidebarMenuButton
                         is="div"
-                        tooltip={item.title}
+                        tooltip={t(item.title)}
                         size="lg"
                       >
                         {item.icon ? <item.icon /> : <IconAlertCircle />}
@@ -83,7 +85,7 @@ export function NavMenu({ name, items, onChange }: INavMenuProps) {
                                   onChange?.(subItem.path || "#")
                                 }}
                               >
-                                <span>{subItem.title}</span>
+                                <span>{t(subItem.title)}</span>
                               </Button>
                             }
                           />
@@ -96,7 +98,7 @@ export function NavMenu({ name, items, onChange }: INavMenuProps) {
             ) : (
               <SidebarMenuItem key={item.title + idx}>
                 <SidebarMenuButton
-                  tooltip={item.title}
+                  tooltip={t(item.title)}
                   isActive={item.isActive}
                   render={
                     <Button
@@ -108,7 +110,7 @@ export function NavMenu({ name, items, onChange }: INavMenuProps) {
                       }}
                     >
                       {item.icon ? <item.icon /> : <IconAlertCircle />}
-                      <span>{item.title}</span>
+                      <span>{t(item.title)}</span>
                     </Button>
                   }
                 ></SidebarMenuButton>
