@@ -25,7 +25,7 @@ export type TRouteObject = {
 const moduleNames = Array.from(
   new Set([
     ...ThunderSDK.getModuleNames(),
-    ...Object.keys(overrideRoutes).filter((name) => !ThunderSDK.getGroup(name)),
+    ...Object.keys(overrideRoutes).filter((name) => !ThunderSDK.hasGroup(name)),
   ])
 )
 
