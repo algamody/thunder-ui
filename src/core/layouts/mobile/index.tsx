@@ -87,7 +87,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {subNavItems?.length
           ? (
             <Container className="flex items-center gap-3 px-4 pt-0 pb-3">
-              <SubNav navMenu={subNavItems} compact />
+              {/* <SubNav navMenu={subNavItems} compact /> */}
+              <SubNav navMenu={subNavItems} />
             </Container>
           )
           : null}
