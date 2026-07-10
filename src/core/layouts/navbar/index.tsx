@@ -57,6 +57,51 @@ import { ThunderSDK } from "thunder-sdk"
 import { Container } from "@/core/custom/Container"
 import { useTranslation } from "react-i18next"
 
+import { getWallets } from "@/core/endpoints/wallet.ts"
+import { Skeleton } from "@/components/ui/skeleton"
+
+function NavBalance({ visible, onToggle }: { visible: boolean; onToggle: () => void }) {
+  const walletRequest = React.useMemo(() => getWallets(), [])
+  const { data: walletData, isLoading } = use(walletRequest)
+
+  const wallet = (walletData?.results ?? [])[0] as
+    | { balance: number; currency: string }
+    | undefined
+
+  const balance = wallet?.balance ?? 0
+  const currency = wallet?.currency?.toUpperCase() ?? "$"
+  const formatted = `${currency} ${balance.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`
+
+  return (
+    <div className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-label={visible ? "Hide balance" : "Show balance"}
+        className="text-muted-foreground hover:text-foreground"
+      >
+        {visible ? (
+          <IconEye className="size-4" />
+        ) : (
+          <IconEyeOff className="size-4" />
+        )}
+      </button>
+      <span className="text-sm font-semibold text-foreground">
+        {isLoading ? (
+          <Skeleton className="h-4 w-16" />
+        ) : visible ? (
+          formatted
+        ) : (
+          "•••••"
+        )}
+      </span>
+    </div>
+  )
+}
+
 function SidebarTrigger() {
   const { toggleSidebar } = useSidebar()
   return (
@@ -284,23 +329,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
               {/* Right Actions */}
               <div className="ms-auto flex items-center gap-3">
               {/* Balance Toggle */}
-                <div className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setBalanceVisible((v) => !v)}
-                    aria-label={balanceVisible ? "Hide balance" : "Show balance"}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    {balanceVisible ? (
-                      <IconEye className="size-4" />
-                    ) : (
-                      <IconEyeOff className="size-4" />
-                    )}
-                  </button>
-                  <span className="text-sm font-semibold text-foreground">
-                    {balanceVisible ? "$5.00" : "•••••"}
-                  </span>
-                </div>
+                {ThunderSDK.isPermitted(ThunderSDK.wallets.get) && (<NavBalance
+                  visible={balanceVisible}
+                  onToggle={() => setBalanceVisible((v) => !v)}
+                />)}
 
                 <Button
                   onClick={toggleTheme}
