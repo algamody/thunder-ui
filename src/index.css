@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/inter";
@@ -133,7 +135,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-white dark:bg-black text-foreground;
+    @apply bg-white text-foreground dark:bg-black;
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
@@ -142,7 +144,7 @@
   html {
     @apply font-sans;
   }
-    [dir="rtl"] .icon-flip-rtl {
-  transform: scaleX(-1);
+  [dir="rtl"] .icon-flip-rtl {
+    transform: scaleX(-1);
   }
 }

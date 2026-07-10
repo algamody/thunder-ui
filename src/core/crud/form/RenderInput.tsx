@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Dropdown } from "../../custom/Dropdown"
 import { Multiselect } from "../../custom/Multiselect"
 import { Tag, TagInput } from "../../custom/TagInput"
-import { MarkdownEditor } from "@/core/custom/MarkdownEditor"
+import { MarkdownEditorField } from "@/core/custom/MarkdownEditor"
 import { AvatarUpload } from "../../custom/AvatarUpload"
 import { ImageUpload } from "../../custom/ImageUpload"
 import { formatDateForInput, handleUpload } from "../../lib/utils"
@@ -98,7 +98,7 @@ export const renderField = ({
         control={control}
         rules={{ required: field.required && "This field is required!" }}
         render={(def) => (
-          <MarkdownEditor
+          <MarkdownEditorField
             value={def.field.value}
             onChange={def.field.onChange}
           />

@@ -13,9 +13,9 @@ export function RenderFieldGroup({ fields, fieldName }: TRenderFieldGroupProp) {
 
   return (
     <>
-      {groups.map(({ group, fields }) => (
+      {groups.map(({ group, fields }, index) => (
         <FieldGroup
-          key={group}
+          key={`${group}_${index}`}
           className={fields[0]?.groupClassName}
           style={fields[0]?.groupStyle}
         >

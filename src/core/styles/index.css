@@ -172,8 +172,6 @@
   scrollbar-width: none; /* Firefox */
 }
 
-
-
 .page-transition {
   view-transition-name: page-content;
 }
@@ -248,4 +246,8 @@
     animation-duration: 1ms;
     animation-name: none;
   }
+}
+
+.mdxeditor-popup-container {
+  z-index: 9999999999 !important;
 }
