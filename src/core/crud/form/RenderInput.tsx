@@ -37,6 +37,7 @@ export default function RenderInput({ name, field }: TRenderInputProps) {
   const {
     control,
     formState: { errors },
+    watch,
   } = useFormContext()
 
   const getError = React.useCallback(
@@ -55,6 +56,12 @@ export default function RenderInput({ name, field }: TRenderInputProps) {
     },
     [errors]
   )
+
+  if (field.requirementKey) {
+    const value = watch(field.requirementKey)
+
+    if (value !== name) return
+  }
 
   if (field.type === "hidden" && (!field.required || !!field.const)) return null
 

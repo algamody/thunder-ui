@@ -343,6 +343,7 @@ export type TField = {
   fieldHint?: string;
   const?: unknown;
   canFilter?: boolean;
+  requirementKey?: string;
 };
 
 export class JSONSchemaToFields {
@@ -394,6 +395,8 @@ export class JSONSchemaToFields {
       refValue: z.string().optional(),
       fieldHint: z.string().optional(),
       const: z.any(),
+      canFilter: z.boolean().optional(),
+      requirementKey: z.string().optional(),
     })
     .loose();
 

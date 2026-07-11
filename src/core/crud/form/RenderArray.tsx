@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/field"
 import { Button } from "@/components/ui/button"
 import { RenderFieldGroup } from "./RenderFieldGroup"
-import { IconBasket } from "@tabler/icons-react"
+import { IconTrashX } from "@tabler/icons-react"
 
 export type TRenderArrayProp = {
   name: string
@@ -27,6 +27,7 @@ export default function RenderArray({ name, field }: TRenderArrayProp) {
   const {
     control,
     formState: { errors },
+    watch
   } = useFormContext()
   const { fields, append, remove } = useFieldArray({
     control,
@@ -52,6 +53,12 @@ export default function RenderArray({ name, field }: TRenderArrayProp) {
     },
     [errors]
   )
+
+  if (field.requirementKey) {
+    const value = watch(field.requirementKey)
+
+    if (value !== name) return
+  }
 
   return (
     <FieldGroup>
@@ -79,13 +86,13 @@ export default function RenderArray({ name, field }: TRenderArrayProp) {
                     }
                   />
                 </div>
-                <div>
+                <div className="flex justify-center">
                   <Button
                     size={"icon"}
                     variant={"destructive"}
                     onClick={() => remove(index)}
                   >
-                    <IconBasket />
+                    <IconTrashX />
                   </Button>
                 </div>
               </div>

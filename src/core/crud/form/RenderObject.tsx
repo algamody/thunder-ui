@@ -26,7 +26,14 @@ export default function RenderObject({ name, field }: TRenderObjectProp) {
 
   const {
     formState: { errors },
+    watch,
   } = useFormContext()
+
+  if (field.requirementKey) {
+    const value = watch(field.requirementKey)
+
+    if (value !== name) return
+  }
 
   const getError = React.useCallback(
     (name?: string) => {
