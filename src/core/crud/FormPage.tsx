@@ -127,7 +127,9 @@ export function FormPage({ name }: IFormPageProps) {
   const navigate = useNavigate();
 
   const isEditMode = !!id;
-  const methods = useForm<any>();
+  const methods = useForm<any>({
+    shouldUnregister: true
+  });
 
   const [isRecordLoading, setIsRecordLoading] = React.useState(true);
 
