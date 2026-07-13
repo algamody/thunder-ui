@@ -31,5 +31,12 @@
   "No results!": "لا توجد نتائج!",
   "adjust or clear filters to reveal issues.": "عدّل عوامل التصفية أو امسحها لعرض النتائج.",
   "selected": "مختارة",
-  "Deleted successfully.": "تم الحذف بنجاح."
+  "Deleted successfully.": "تم الحذف بنجاح.",
+  "Balance": "الرصيد",
+  "Transactions": "المعاملات",
+  "No transactions to display": "لا توجد معاملات لعرضها",
+  "Wallet": "المحفظة",
+  "Overview": "نظرة عامة"
+
+
 }

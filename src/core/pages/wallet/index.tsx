@@ -12,6 +12,7 @@ import { Container } from "@/core/custom/Container";
 import { use } from "@/core/hooks/use";
 import { getWallets } from "@/core/endpoints/wallet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next"
 
 /**
  * Composed wallet overview card: a currency switcher whose trigger morphs open
@@ -22,7 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
  */
 export function WalletCard() {
   const [balanceHidden, setBalanceHidden] = useState(false);
-
+  const { t } = useTranslation()
   const walletRequest = React.useMemo(() => getWallets(), []);
   const { data: walletData, isLoading } = use(walletRequest);
 
@@ -57,11 +58,11 @@ export function WalletCard() {
 
       <div className="mt-8 flex flex-col items-center text-center">
         <div className="flex items-center gap-1.5">
-          <p className="text-xs text-muted-foreground">Balance</p>
+          <p className="text-xs text-muted-foreground">{t("Balance")}</p>
           <button
             type="button"
             onClick={() => setBalanceHidden((h: unknown) => !h)}
-            aria-label={balanceHidden ? "Show balance" : "Hide balance"}
+            aria-label={balanceHidden ? t("Show balance") : t("Hide balance")}
             aria-pressed={balanceHidden}
             className="text-muted-foreground outline-none transition-colors hover:text-foreground"
           >

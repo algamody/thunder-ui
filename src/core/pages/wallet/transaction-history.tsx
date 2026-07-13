@@ -12,6 +12,7 @@ import { use } from "@/core/hooks/use";
 import { getWalletLedgers } from "@/core/endpoints/wallet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDateForInput } from "@/core/lib/utils";
+import { useTranslation } from "react-i18next";
 
 type TWalletLedger = typeof ThunderSDK.walletLedgers.type.get$return.results[number];
 
@@ -56,13 +57,13 @@ export function TransactionHistory() {
   );
 
   const { data, isLoading } = use(ledgerRequest);
-
+  const { t } = useTranslation()
   const transactions = (data?.results as TWalletLedger[] ?? []);
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">Transactions</h3>
+        <h3 className="text-sm font-semibold text-foreground">{t("Transactions")}</h3>
       </div>
 
       {isLoading && (
@@ -76,7 +77,7 @@ export function TransactionHistory() {
       {!isLoading && transactions.length === 0 && (
         <div className="py-6 text-center">
           <p className="text-sm text-muted-foreground">
-            No transactions to display
+            {t("No transactions to display")}
           </p>
         </div>
       )}

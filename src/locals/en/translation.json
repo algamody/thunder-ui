@@ -31,5 +31,10 @@
   "No results!": "No results!",
   "adjust or clear filters to reveal issues.": "adjust or clear filters to reveal issues.",
   "selected": "selected",
-  "Deleted successfully.": "Deleted successfully."
+  "Deleted successfully.": "Deleted successfully.",
+  "Balance": "Balance",
+  "Transactions": "Transactions",
+  "No transactions to display": "No transactions to display",
+  "Wallet": "Wallet",
+  "Overview": "Overview"
 }
