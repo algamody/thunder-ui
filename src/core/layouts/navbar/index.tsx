@@ -93,14 +93,14 @@ return (
         <IconEyeOff className="size-4" />
       )}
     </button>
-    <span className="text-sm font-semibold text-foreground flex items-center justify-center h-5 w-auto min-w-[60px]">
+    <span className="text-sm font-semibold text-foreground flex items-center justify-center h-5 w-auto min-w-15">
       {isLoading ? (
         <Skeleton className="h-4 w-16 " />
       ) : (
         <ActionSwapText
           value={visible ? formatted : "hidden"}
           animation="cascade"
-          className="text-sm font-semibold text-foreground flex items-center justify-center leading-none"
+          className="text-sm font-semibold text-foreground"
         >
           
           {visible ? formatted : maskedBalance}

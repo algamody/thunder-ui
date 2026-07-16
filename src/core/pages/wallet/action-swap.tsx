@@ -166,8 +166,9 @@ export function ActionSwapText({
   const [width, setWidth] = useState<number>();
 
   useLayoutEffect(() => {
-    const nextWidth = measureRef.current?.offsetWidth;
-    if (!nextWidth) return;
+    const rect = measureRef.current?.getBoundingClientRect();
+    if (!rect?.width) return;
+    const nextWidth = Math.ceil(rect.width) + 1; // +1px buffer for anti-aliasing
     setWidth((currentWidth) => (currentWidth === nextWidth ? currentWidth : nextWidth));
   });
 
@@ -191,7 +192,15 @@ export function ActionSwapText({
         aria-hidden
         className="invisible inline-block whitespace-nowrap"
       >
-        {children}
+        {cascade && label ? (
+          label.split("").map((char, i) => (
+            <span key={i} className="inline-block whitespace-pre">
+              {char}
+            </span>
+          ))
+        ) : (
+          children
+        )}
       </span>
       {cascade ? (
         <>

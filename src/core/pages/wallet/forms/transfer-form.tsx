@@ -67,7 +67,7 @@ export function SendForm({ open, onOpenChange }: { open: boolean; onOpenChange: 
             <FieldGroup>
               <Field>
                 <FieldLabel>{t("Add Recipient")}</FieldLabel>
-                <Input placeholder={t("Email, phone, or ID")} {...register("receiver", { required: true })} />
+                <Input placeholder={t("Email or Phone")} {...register("receiver", { required: true })} />
                 {errors.receiver && <FieldError>{t("Required")}</FieldError>}
               </Field>
               <Field>

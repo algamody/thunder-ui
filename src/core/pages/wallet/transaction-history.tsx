@@ -3,16 +3,18 @@ import type { ThunderSDK } from "thunder-sdk";
 import {
   IconArrowNarrowUp,
   IconArrowDownDashed,
-  // IconRepeat,
-  // IconCreditCardPay,
+  IconCalendar 
 } from "@tabler/icons-react";
-import React from "react";
+import React, { useState } from "react";
 import type { ComponentType } from "react";
+import type { DateRange } from "react-day-picker";
 import { use } from "@/core/hooks/use";
 import { getWalletLedgers } from "@/core/endpoints/wallet";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatDateForInput } from "@/core/lib/utils";
 import { useTranslation } from "react-i18next";
+import { SkeletonRepeater } from "@/core/custom/SkeletonRepeater";
 
 type TWalletLedger = typeof ThunderSDK.walletLedgers.type.get$return.results[number];
 
@@ -34,42 +36,136 @@ function formatAmount(amount: number, type: TWalletLedger["type"], currency: str
   })} ${currency.toUpperCase()}`;
 }
 
-function TransactionSkeleton() {
-  return (
-    <div className="flex items-center gap-3 px-4 py-3">
-      <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-3 w-32" />
-      </div>
-      <div className="flex shrink-0 flex-col items-end gap-1">
-        <Skeleton className="h-4 w-16" />
-        <Skeleton className="h-3 w-12" />
-      </div>
-    </div>
-  );
+
+type FilterPreset = "1m" | "3m" | "6m" | "custom";
+
+function getDateFrom(preset: FilterPreset): Date | undefined {
+  const now = new Date();
+  switch (preset) {
+    case "1m": return new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+    case "3m": return new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+    case "6m": return new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+    default: return undefined;
+  }
+}
+
+function buildQuery(preset: FilterPreset, customRange: DateRange | undefined) {
+  const query: Record<string, unknown> = { sort: { createdAt: -1 } };
+
+  let from: Date | undefined;
+  let to: Date | undefined;
+
+  if (preset === "custom" && customRange) {
+    from = customRange.from;
+    to = customRange.to;
+  } else if (preset !== "custom") {
+    from = getDateFrom(preset);
+    to = new Date();
+  }
+
+  if (from || to) {
+    const createdAt: Record<string, unknown> = {};
+    if (from) createdAt.$gte = { type: "date", value: from.toISOString() };
+    if (to) {
+      const endOfDay = new Date(to);
+      endOfDay.setHours(23, 59, 59, 999);
+      createdAt.$lte = { type: "date", value: endOfDay.toISOString() };
+    }
+    query.filters = { createdAt };
+  }
+
+  return query;
 }
 
 export function TransactionHistory() {
-  const ledgerRequest = React.useMemo(
-    () => getWalletLedgers({ sort: { createdAt: -1 }}),
-    []
-  );
+  const { t } = useTranslation();
+  const [preset, setPreset] = useState<FilterPreset>("1m");
+  const [range, setRange] = useState<DateRange | undefined>();
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
+  const query = React.useMemo(() => buildQuery(preset, range), [preset, range]);
+  const ledgerRequest = React.useMemo(() => getWalletLedgers(query), [query]);
   const { data, isLoading } = use(ledgerRequest);
-  const { t } = useTranslation()
   const transactions = (data?.results as TWalletLedger[] ?? []);
 
+  const presets: { key: FilterPreset; label: string }[] = [
+    { key: "1m", label: t("This Month") },
+    { key: "3m", label: t("3 Months") },
+    { key: "6m", label: t("6 Months") },
+    { key: "custom", label: t("Custom") },
+  ];
+
+  const handlePreset = (key: FilterPreset) => {
+    setPreset(key);
+    if (key !== "custom") { setRange(undefined); setCalendarOpen(false); }
+    else setCalendarOpen(true);
+  };
+
+  const rangeLabel = range?.from
+    ? `${range.from.toLocaleDateString()}${range.to ? ` – ${range.to.toLocaleDateString()}` : ""}`
+    : null;
+
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-3">
+      {/* Filter tabs */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {presets.map(({ key, label }) => (
+          key === "custom" ? (
+            <Popover key={key} open={calendarOpen} onOpenChange={setCalendarOpen}>
+              <PopoverTrigger
+                render={
+                  <button
+                    type="button"
+                    onClick={() => handlePreset("custom")}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                      preset === "custom"
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-card text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <IconCalendar className="h-3.5 w-3.5" />
+                    {rangeLabel ?? label}
+                  </button>
+                }
+              />
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="range"
+                  selected={range}
+                  onSelect={(r) => { setRange(r); if (r?.from && r?.to) setCalendarOpen(false); }}
+                  numberOfMonths={1}
+                  disabled={{ after: new Date() }}
+                />
+              </PopoverContent>
+            </Popover>
+          ) : (
+            <button
+              key={key}
+              type="button"
+              onClick={() => handlePreset(key)}
+              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                preset === key
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          )
+        ))}
+      </div>
+      {/* Header row */}
+      <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-foreground">{t("Transactions")}</h3>
       </div>
 
+      
+
+      {/* Transaction list */}
       {isLoading && (
         <div className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-card">
           {Array.from({ length: 3 }).map((_, i) => (
-            <TransactionSkeleton key={i} />
+            <SkeletonRepeater key={i} />
           ))}
         </div>
       )}
