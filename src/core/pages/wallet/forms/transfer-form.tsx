@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { Keyboard } from "@capacitor/keyboard";
 import { ThunderSDK } from "thunder-sdk";
 import { IconCheck, IconCopy, IconArrowNarrowUp } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
@@ -21,8 +22,32 @@ export function SendForm({ open, onOpenChange }: { open: boolean; onOpenChange: 
   const [signData, setSignData] = useState<any>(null);
   const [ref, setRef] = useState<string>("");
   const [error, setError] = useState("");
+  const [kbHeight, setKbHeight] = useState(0);
 
+  useEffect(() => {
+    let showListener: any;
+    let hideListener: any;
 
+    const setupKeyboard = async () => {
+      try {
+        showListener = await Keyboard.addListener("keyboardWillShow", (info) => {
+          setKbHeight(info.keyboardHeight);
+        });
+        hideListener = await Keyboard.addListener("keyboardWillHide", () => {
+          setKbHeight(0);
+        });
+      } catch (e) {
+        // Ignore if plugin not available on web
+      }
+    };
+
+    setupKeyboard();
+
+    return () => {
+      if (showListener) showListener.remove();
+      if (hideListener) hideListener.remove();
+    };
+  }, []);
 
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<TSendForm>();
 
@@ -59,7 +84,10 @@ export function SendForm({ open, onOpenChange }: { open: boolean; onOpenChange: 
 
   return (
     <Drawer open={open} onOpenChange={close}>
-      <DrawerContent className="mx-auto w-full max-w-md p-4">
+      <DrawerContent 
+        className="mx-auto w-full max-w-md p-4 transition-[padding] duration-300 ease-out" 
+        style={{ paddingBottom: kbHeight > 0 ? `calc(1rem + ${kbHeight}px)` : undefined }}
+      >
         <DrawerHeader className="px-0 pt-0"><DrawerTitle>{t("Send Money")}</DrawerTitle></DrawerHeader>
         
         {step === "input" && (
