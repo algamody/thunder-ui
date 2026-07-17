@@ -31,7 +31,7 @@ export const refreshThunder = async () => {
     await initThunder();
 
     ThunderSDK._axios?.interceptors.response.use(
-        (_) => _,
+        (_: any) => _,
         async (error: AxiosError<{ messages?: { message: string }[] }>) => {
             if (error.response?.data?.messages?.length) {
                 error.response.data.messages.map((v: { message: string }) =>

@@ -69,11 +69,12 @@ function useNavItems() {
 function TabLink({ item, active }: { item: TNav; active: boolean }) {
   const { t } = useTranslation();
   const Icon = item.icon ?? IconAlertCircle;
+  const isHashRoute = item.path?.startsWith("#");
 
   return (
     <Link
       to={item.path || "#"}
-      viewTransition
+      viewTransition={!isHashRoute}
       className={cn(
         "flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 transition-colors",
         active ? "text-primary" : "text-muted-foreground hover:text-foreground",
