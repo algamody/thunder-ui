@@ -1,10 +1,11 @@
 "use client";
 
-import { IconArrowDownDashed , IconArrowNarrowUp , IconCreditCardPay , 
+import { IconArrowDownDashed , IconArrowNarrowUp , IconCreditCardPay , IconQrcode ,
   // IconRepeat 
  } from "@tabler/icons-react";
 import { motion, useReducedMotion } from "motion/react";
 import type { ComponentType } from "react";
+import { useTranslation } from "react-i18next";
 import { SPRING_PRESS } from "@/lib/ease";
 
 type WalletAction = {
@@ -18,23 +19,27 @@ type WalletAction = {
  * Row of primary wallet actions rendered icon-over-label, with a spring press.
  */
 export function WalletActions({
+  onReceive,
   onSend,
   onDeposit,
   // onSwap,
   onBuy,
 }: {
+  onReceive?: () => void;
   onSend?: () => void;
   onDeposit?: () => void;
   // onSwap?: () => void;
   onBuy?: () => void;
 }) {
   const reduce = useReducedMotion();
+  const { t } = useTranslation();
 
   const actions: WalletAction[] = [
-    { key: "send", label: "Send", icon: IconArrowNarrowUp, onClick: onSend },
-    { key: "deposit", label: "Deposit", icon: IconArrowDownDashed, onClick: onDeposit },
-    // { key: "swap", label: "Swap", icon: IconRepeat, onClick: onSwap },
-    { key: "buy", label: "Buy", icon: IconCreditCardPay, onClick: onBuy },
+    { key: "receive", label: t("Receive"), icon: IconQrcode, onClick: onReceive },
+    { key: "send", label: t("Send"), icon: IconArrowNarrowUp, onClick: onSend },
+    { key: "deposit", label: t("Deposit"), icon: IconArrowDownDashed, onClick: onDeposit },
+    // { key: "swap", label: t("Swap"), icon: IconRepeat, onClick: onSwap },
+    { key: "buy", label: t("Buy"), icon: IconCreditCardPay, onClick: onBuy },
   ];
 
   return (

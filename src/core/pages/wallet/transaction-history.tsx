@@ -24,17 +24,50 @@ const TYPE_ICONS: Record<TWalletLedger["type"], ComponentType<{ className?: stri
   debit: IconArrowNarrowUp,
 };
 
-const TYPE_LABELS: Record<TWalletLedger["type"], string> = {
+// مفاتيح ترجمة ثابتة — تُمرَّر لـ t() وقت العرض داخل الـ component، وليست نصًا نهائيًا
+const TYPE_LABEL_KEYS: Record<TWalletLedger["type"], string> = {
   credit: "Received",
   debit: "Sent",
 };
 
-function formatAmount(amount: number, type: TWalletLedger["type"], currency: string) {
-  const sign = type === "credit" ? "+" : "-";
-  return `${sign}${(Math.abs(amount) / 100).toLocaleString(undefined, {
+const TYPE_COLOR_CLASS: Record<TWalletLedger["type"], string> = {
+  credit: "text-emerald-600 dark:text-emerald-400",
+  debit: "text-red-600 dark:text-red-400",
+};
+
+const TYPE_ICON_BG_CLASS: Record<TWalletLedger["type"], string> = {
+  credit: "bg-emerald-500/15",
+  debit: "bg-red-500/15",
+};
+
+// Unicode bidi isolate marks — تمنع المتصفح من قلب ترتيب الأرقام/الحروف
+// اللاتينية لما تكون جوه container اتجاهه rtl (Arabic UI).
+const LRI = "\u2066"; // Left-to-Right Isolate
+const PDI = "\u2069"; // Pop Directional Isolate
+
+// لو حابب تزيد عملات زيادة، زيدها هنا.
+const CURRENCY_LABELS_AR: Record<string, string> = {
+  LYD: "د.ل",
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
+};
+
+function getCurrencyLabel(currency: string, lang: string) {
+  const code = currency.toUpperCase();
+  if (lang?.startsWith("ar")) {
+    return CURRENCY_LABELS_AR[code] ?? code;
+  }
+  return code;
+}
+
+function formatAmount(amount: number, currency: string, lang: string) {
+  const label = getCurrencyLabel(currency, lang);
+  const numberStr = (Math.abs(amount) / 100).toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })} ${currency.toUpperCase()}`;
+  });
+  return `${LRI}${numberStr} ${label}${PDI}`;
 }
 
 
@@ -79,7 +112,7 @@ function buildQuery(preset: FilterPreset, customRange: DateRange | undefined) {
 }
 
 export function TransactionHistory() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [preset, setPreset] = useState<FilterPreset>("1m");
   const [range, setRange] = useState<DateRange | undefined>();
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -189,7 +222,8 @@ export function TransactionHistory() {
               : tx.purpose ?? tx.reference;
             
             if (tx.purpose === "wallet_transfer" && txType === "debit") {
-               description = `Transfer to ${((tx as any).oppositeTenant?.name || (tx as any).oppositeWallet) ?? "Wallet"}`;
+               const target = (tx as any).oppositeTenant?.name || (tx as any).oppositeWallet || t("Wallet");
+               description = t("Transfer to {{target}}", { target });
             }
 
             return (
@@ -197,13 +231,13 @@ export function TransactionHistory() {
                 key={tx._id}
                 className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted text-foreground">
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${TYPE_ICON_BG_CLASS[txType]} ${TYPE_COLOR_CLASS[txType]}`}>
                   <Icon className="h-4 w-4" />
                 </span>
 
                 <div className="flex min-w-0 flex-1 flex-col">
                   <span className="truncate text-sm font-medium text-foreground">
-                    {TYPE_LABELS[txType]}
+                    {t(TYPE_LABEL_KEYS[txType])}
                   </span>
                   <span className="truncate text-xs text-muted-foreground">
                     {description}
@@ -211,13 +245,11 @@ export function TransactionHistory() {
                 </div>
 
                 <div className="flex shrink-0 flex-col items-end">
-                  <span
-                    className={`text-sm font-medium ${txType === "credit" ? "text-green" : "text-foreground"}`}
-                  >
-                    {formatAmount(tx.amount, txType, tx.currency)}
+                  <span className={`text-sm font-medium ${TYPE_COLOR_CLASS[txType]}`}>
+                    {formatAmount(tx.amount, tx.currency, i18n.language)}
                   </span>
                   <div className="flex items-center gap-1.5">
-                    <IconCalendarCheck  className="size-3.5 text-success" />
+                    <IconCalendarCheck className="size-3.5 text-success" />
                     <span className="text-xs text-muted-foreground">
                       {formatDateForInput(tx.createdAt as TWalletLedger["createdAt"])}
                     </span>
