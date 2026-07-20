@@ -31,13 +31,13 @@ const TYPE_LABEL_KEYS: Record<TWalletLedger["type"], string> = {
 };
 
 const TYPE_COLOR_CLASS: Record<TWalletLedger["type"], string> = {
-  credit: "text-emerald-600 dark:text-emerald-400",
-  debit: "text-red-600 dark:text-red-400",
+  credit: "text-success",
+  debit: "text-destructive",
 };
 
 const TYPE_ICON_BG_CLASS: Record<TWalletLedger["type"], string> = {
-  credit: "bg-emerald-500/15",
-  debit: "bg-red-500/15",
+  credit: "bg-success/15",
+  debit: "bg-destructive/15",
 };
 
 // Unicode bidi isolate marks — تمنع المتصفح من قلب ترتيب الأرقام/الحروف

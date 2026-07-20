@@ -48,7 +48,7 @@ export function CopyButton({
         className="h-3.5 w-3.5"
       >
         {copied ? (
-          <IconCheck className="h-3.5 w-3.5 text-emerald-500" />
+          <IconCheck className="h-3.5 w-3.5 text-success" />
         ) : (
           <IconCopy className="h-3.5 w-3.5" />
         )}

@@ -47,8 +47,8 @@ export function BalanceDelta({
             className={cn(
               "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums",
               up
-                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                : "bg-red-500/15 text-red-600 dark:text-red-400",
+                ? "bg-success/15 text-success"
+                : "bg-destructive/15 text-destructive",
             )}
           >
             {up ? (
