@@ -1,20 +1,19 @@
 "use client";
+import { useState, useMemo } from "react";
+import type { ComponentType } from "react";
 import type { ThunderSDK } from "thunder-sdk";
 import {
   IconArrowNarrowUp,
   IconArrowDownDashed,
   IconCalendar
 } from "@tabler/icons-react";
-import React, { useState } from "react";
-import type { ComponentType } from "react";
-import type { DateRange } from "react-day-picker";
 import { use } from "@/core/hooks/use";
 import { getWalletLedgers } from "@/core/endpoints/wallet";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatDateForInput } from "@/core/lib/utils";
 import { useTranslation } from "react-i18next";
 import { SkeletonRepeater } from "@/core/custom/SkeletonRepeater";
+import { Filters, type TFilterValue } from "@/core/crud/filters";
+import type { TField } from "@/core/lib/jsonSchemaToFields";
 
 type TWalletLedger = typeof ThunderSDK.walletLedgers.type.get$return.results[number];
 
@@ -23,10 +22,9 @@ const TYPE_ICONS: Record<TWalletLedger["type"], ComponentType<{ className?: stri
   debit: IconArrowNarrowUp,
 };
 
-// مفاتيح ترجمة ثابتة — تُمرَّر لـ t() وقت العرض داخل الـ component، وليست نصًا نهائيًا
 const TYPE_LABEL_KEYS: Record<TWalletLedger["type"], string> = {
-  credit: "Received",
-  debit: "Sent",
+  credit: "Credit",
+  debit: "Debit",
 };
 
 const TYPE_COLOR_CLASS: Record<TWalletLedger["type"], string> = {
@@ -39,12 +37,9 @@ const TYPE_ICON_BG_CLASS: Record<TWalletLedger["type"], string> = {
   debit: "bg-destructive/15",
 };
 
-// Unicode bidi isolate marks — تمنع المتصفح من قلب ترتيب الأرقام/الحروف
-// اللاتينية لما تكون جوه container اتجاهه rtl (Arabic UI).
-const LRI = "\u2066"; // Left-to-Right Isolate
-const PDI = "\u2069"; // Pop Directional Isolate
+const LRI = "\u2066";
+const PDI = "\u2069";
 
-// لو حابب تزيد عملات زيادة، زيدها هنا.
 const CURRENCY_LABELS_AR: Record<string, string> = {
   LYD: "د.ل",
   USD: "$",
@@ -69,130 +64,82 @@ function formatAmount(amount: number, currency: string, lang: string) {
   return `${LRI}${numberStr} ${label}${PDI}`;
 }
 
+function parseFilterToBackendQuery(filters?: TFilterValue) {
+  if (!filters || !Object.keys(filters).length) return undefined;
+  const parsed: Record<string, unknown> = {};
 
-type FilterPreset = "1m" | "3m" | "6m" | "custom";
+  Object.entries(filters).forEach(([key, filter]) => {
+    if (!filter || filter.value === undefined || filter.value === null) return;
+    const { value } = filter;
 
-function getDateFrom(preset: FilterPreset): Date | undefined {
-  const now = new Date();
-  switch (preset) {
-    case "1m": return new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-    case "3m": return new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
-    case "6m": return new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
-    default: return undefined;
-  }
-}
-
-function buildQuery(preset: FilterPreset, customRange: DateRange | undefined) {
-  const query: Record<string, unknown> = { sort: { createdAt: -1 } };
-
-  let from: Date | undefined;
-  let to: Date | undefined;
-
-  if (preset === "custom" && customRange) {
-    from = customRange.from;
-    to = customRange.to;
-  } else if (preset !== "custom") {
-    from = getDateFrom(preset);
-    to = new Date();
-  }
-
-  if (from || to) {
-    const createdAt: Record<string, unknown> = {};
-    if (from) createdAt.$gte = { type: "date", value: from.toISOString() };
-    if (to) {
-      const endOfDay = new Date(to);
-      endOfDay.setHours(23, 59, 59, 999);
-      createdAt.$lte = { type: "date", value: endOfDay.toISOString() };
+    if (key === "type") {
+      const arr = Array.isArray(value) ? value : [value];
+      if (arr.length) parsed[key] = { $in: arr.map((v) => ({ type: "string", value: String(v) })) };
+      return;
     }
-    query.filters = { createdAt };
-  }
 
-  return query;
+    if (key === "amount") {
+      const nums = (Array.isArray(value) ? value : [value]).map(Number).filter((n) => !isNaN(n));
+      if (nums.length === 1) {
+        const cents = Math.abs(nums[0]) * 100;
+        parsed[key] = { $in: [{ type: "number", value: String(cents) }, { type: "number", value: String(-cents) }] };
+      } else if (nums.length >= 2) {
+        const [a, b] = [Math.abs(nums[0]) * 100, Math.abs(nums[1]) * 100];
+        const min = Math.min(a, b), max = Math.max(a, b);
+        parsed.$or = [
+          { amount: { $gte: { type: "number", value: String(min) }, $lte: { type: "number", value: String(max) } } },
+          { amount: { $gte: { type: "number", value: String(-max) }, $lte: { type: "number", value: String(-min) } } },
+        ];
+      }
+      return;
+    }
+
+    if ((key === "createdAt" || key === "updatedAt") && Array.isArray(value) && value.length) {
+      const dateQ: Record<string, unknown> = {};
+      if (value[0]) dateQ.$gte = { type: "date", value: new Date(value[0]).toISOString() };
+      const toDate = value[1] ? new Date(value[1]) : value[0] ? new Date(value[0]) : null;
+      if (toDate) {
+        toDate.setHours(23, 59, 59, 999);
+        dateQ.$lte = { type: "date", value: toDate.toISOString() };
+      }
+      parsed[key] = dateQ;
+      return;
+    }
+
+    parsed[key] = { $eq: { type: typeof value === "number" ? "number" : "string", value: String(value) } };
+  });
+
+  return Object.keys(parsed).length ? parsed : undefined;
 }
 
-export function TransactionHistory() {
+// Fields prop passed directly from page schema, no static fallback array
+export function TransactionHistory({ fields }: { fields?: TField[] }) {
   const { t, i18n } = useTranslation();
-  const [preset, setPreset] = useState<FilterPreset>("1m");
-  const [range, setRange] = useState<DateRange | undefined>();
-  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<TFilterValue | undefined>();
 
-  const query = React.useMemo(() => buildQuery(preset, range), [preset, range]);
-  const ledgerRequest = React.useMemo(() => getWalletLedgers(query), [query]);
+  const query = useMemo(() => {
+    const filters = parseFilterToBackendQuery(activeFilters);
+    return { sort: { createdAt: -1 }, ...(filters && { filters }) };
+  }, [activeFilters]);
+
+  const ledgerRequest = useMemo(() => getWalletLedgers(query), [query]);
   const { data, isLoading } = use(ledgerRequest);
-  const transactions = (data?.results as TWalletLedger[] ?? []);
 
-  const presets: { key: FilterPreset; label: string }[] = [
-    { key: "1m", label: t("This Month") },
-    { key: "3m", label: t("3 Months") },
-    { key: "6m", label: t("6 Months") },
-    { key: "custom", label: t("Custom") },
-  ];
-
-  const handlePreset = (key: FilterPreset) => {
-    setPreset(key);
-    if (key !== "custom") { setRange(undefined); setCalendarOpen(false); }
-    else setCalendarOpen(true);
-  };
-
-  const rangeLabel = range?.from
-    ? `${range.from.toLocaleDateString()}${range.to ? ` – ${range.to.toLocaleDateString()}` : ""}`
-    : null;
+  const transactions = ((data as { results?: TWalletLedger[] })?.results) ?? [];
 
   return (
-    <div className="flex flex-col gap-3">
-
-      {/* Header row */}
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold text-foreground">{t("Transactions")}</h3>
+    <div className="flex flex-col gap-2.5">
+      {/* Dynamic Filters from Backend Schema */}
+      <div className="flex items-center gap-2">
+        <Filters fields={fields ?? []} filters={activeFilters} onChange={setActiveFilters} />
       </div>
 
-      {/* Filter tabs */}
-      <div className="flex items-center gap-1.5 flex-wrap">
-        {presets.map(({ key, label }) => (
-          key === "custom" ? (
-            <Popover key={key} open={calendarOpen} onOpenChange={setCalendarOpen}>
-              <PopoverTrigger
-                render={
-                  <button
-                    type="button"
-                    onClick={() => handlePreset("custom")}
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${preset === "custom"
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-card text-muted-foreground hover:text-foreground"
-                      }`}
-                  >
-                    <IconCalendar className="h-3.5 w-3.5" />
-                    {rangeLabel ?? label}
-                  </button>
-                }
-              />
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="range"
-                  selected={range}
-                  onSelect={(r) => { setRange(r); if (r?.from && r?.to) setCalendarOpen(false); }}
-                  numberOfMonths={1}
-                  disabled={{ after: new Date() }}
-                />
-              </PopoverContent>
-            </Popover>
-          ) : (
-            <button
-              key={key}
-              type="button"
-              onClick={() => handlePreset(key)}
-              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${preset === key
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground hover:text-foreground"
-                }`}
-            >
-              {label}
-            </button>
-          )
-        ))}
+      <div className="flex items-center justify-between mt-1">
+        <h3 className="text-sm font-semibold text-foreground shrink-0">
+          {t("Transactions")}
+        </h3>
       </div>
 
-      {/* Transaction list */}
       {isLoading && (
         <div className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-card">
           {Array.from({ length: 3 }).map((_, i) => (
