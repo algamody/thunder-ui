@@ -1,11 +1,12 @@
 "use client";
-import { useState, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import type { ComponentType } from "react";
-import type { ThunderSDK } from "thunder-sdk";
+import { ThunderSDK } from "thunder-sdk";
+import type { ThunderSDK as TSDKType } from "thunder-sdk";
 import {
-  IconArrowNarrowUp,
   IconArrowDownDashed,
-  IconCalendar
+  IconArrowNarrowUp,
+  IconCalendar,
 } from "@tabler/icons-react";
 import { use } from "@/core/hooks/use";
 import { getWalletLedgers } from "@/core/endpoints/wallet";
@@ -13,12 +14,18 @@ import { formatDateForInput } from "@/core/lib/utils";
 import { useTranslation } from "react-i18next";
 import { SkeletonRepeater } from "@/core/custom/SkeletonRepeater";
 import { Filters, type TFilterValue } from "@/core/crud/filters";
-import type { TField } from "@/core/lib/jsonSchemaToFields";
+import { fieldsFromModuleMetadata } from "@/core/crud/FormPage";
+import { JSONSchemaToFields, type TField } from "@/core/lib/jsonSchemaToFields";
 import { CopyButton } from "@/components/ui/copy-button";
+import { filterToMongo } from "@/core/crud/filters/lib/filterToMongo";
 
-type TWalletLedger = typeof ThunderSDK.walletLedgers.type.get$return.results[number];
+type TWalletLedger =
+  typeof TSDKType.walletLedgers.type.get$return.results[number];
 
-const TYPE_ICONS: Record<TWalletLedger["type"], ComponentType<{ className?: string }>> = {
+const TYPE_ICONS: Record<
+  TWalletLedger["type"],
+  ComponentType<{ className?: string }>
+> = {
   credit: IconArrowDownDashed,
   debit: IconArrowNarrowUp,
 };
@@ -65,63 +72,80 @@ function formatAmount(amount: number, currency: string, lang: string) {
   return `${LRI}${numberStr} ${label}${PDI}`;
 }
 
-function parseFilterToBackendQuery(filters?: TFilterValue) {
-  if (!filters || !Object.keys(filters).length) return undefined;
-  const parsed: Record<string, unknown> = {};
-
-  Object.entries(filters).forEach(([key, filter]) => {
-    if (!filter || filter.value === undefined || filter.value === null) return;
-    const { value } = filter;
-
-    if (key === "type") {
-      const arr = Array.isArray(value) ? value : [value];
-      if (arr.length) parsed[key] = { $in: arr.map((v) => ({ type: "string", value: String(v) })) };
-      return;
-    }
-
-    if (key === "amount") {
-      const nums = (Array.isArray(value) ? value : [value]).map(Number).filter((n) => !isNaN(n));
-      if (nums.length === 1) {
-        const cents = Math.abs(nums[0]) * 100;
-        parsed[key] = { $in: [{ type: "number", value: String(cents) }, { type: "number", value: String(-cents) }] };
-      } else if (nums.length >= 2) {
-        const [a, b] = [Math.abs(nums[0]) * 100, Math.abs(nums[1]) * 100];
-        const min = Math.min(a, b), max = Math.max(a, b);
-        parsed.$or = [
-          { amount: { $gte: { type: "number", value: String(min) }, $lte: { type: "number", value: String(max) } } },
-          { amount: { $gte: { type: "number", value: String(-max) }, $lte: { type: "number", value: String(-min) } } },
-        ];
-      }
-      return;
-    }
-
-    if ((key === "createdAt" || key === "updatedAt") && Array.isArray(value) && value.length) {
-      const dateQ: Record<string, unknown> = {};
-      if (value[0]) dateQ.$gte = { type: "date", value: new Date(value[0]).toISOString() };
-      const toDate = value[1] ? new Date(value[1]) : value[0] ? new Date(value[0]) : null;
-      if (toDate) {
-        toDate.setHours(23, 59, 59, 999);
-        dateQ.$lte = { type: "date", value: toDate.toISOString() };
-      }
-      parsed[key] = dateQ;
-      return;
-    }
-
-    parsed[key] = { $eq: { type: typeof value === "number" ? "number" : "string", value: String(value) } };
-  });
-
-  return Object.keys(parsed).length ? parsed : undefined;
-}
-
-// Fields prop passed directly from page schema, no static fallback array
-export function TransactionHistory({ fields }: { fields?: TField[] }) {
+export function TransactionHistory({
+  fields: propFields,
+}: {
+  fields?: TField[];
+}) {
   const { t, i18n } = useTranslation();
-  const [activeFilters, setActiveFilters] = useState<TFilterValue | undefined>();
+  const [filters, setFilters] = React.useState<TFilterValue>();
+  const [fields, setFields] = React.useState<TField[]>([]);
+
+  const metadata = useMemo(
+    () => ThunderSDK.getMetadata("walletLedgers"),
+    [],
+  );
+
+  useEffect(() => {
+    if (propFields && propFields.length > 0) return;
+
+    let isMounted = true;
+    void (async () => {
+      try {
+        const results = await fieldsFromModuleMetadata(metadata, {
+          type: "output",
+          resolveRef: false,
+        });
+        if (!isMounted) return;
+        setFields(JSONSchemaToFields.flatten(results, { excludeArray: true }));
+      } catch (err) {
+        console.error("Failed to load metadata fields for walletLedgers:", err);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [metadata, propFields]);
+
+  const activeFields = propFields && propFields.length > 0 ? propFields : fields;
+  const outboundFilters = React.useMemo(() => {
+    const nextFilters = { ...(filters ?? {}) };
+
+    for (const [key, filter] of Object.entries(nextFilters)) {
+      const field = activeFields.find((item) => item.name === key);
+
+
+      if (field?.enum && filter.operator === "$all") {
+        nextFilters[key] = {
+          ...filter,
+          operator: "$in",
+        };
+      }
+
+
+      if (key === "amount" && filter?.value !== undefined && filter?.value !== null) {
+        const rawVal = filter.value;
+        const cents = Math.abs(rawVal) * 100;
+        nextFilters[key] = {
+          operator: "$in",
+          value: [cents, -cents],
+        };
+      }
+    }
+
+    return nextFilters;
+  }, [activeFields, filters]);
+
 
   const query = useMemo(() => {
-    const filters = parseFilterToBackendQuery(activeFilters);
-    return { sort: { createdAt: -1 }, ...(filters && { filters }) };
-  }, [activeFilters]);
+    const mongoFilters = filterToMongo(outboundFilters);
+    const hasFilters = Object.keys(mongoFilters).length > 0;
+    return {
+      sort: { createdAt: -1 },
+      ...(hasFilters ? { filters: mongoFilters } : {}),
+    };
+  }, [outboundFilters]);
 
   const ledgerRequest = useMemo(() => getWalletLedgers(query), [query]);
   const { data, isLoading } = use(ledgerRequest);
@@ -130,9 +154,13 @@ export function TransactionHistory({ fields }: { fields?: TField[] }) {
 
   return (
     <div className="flex flex-col gap-2.5">
-      {/* Dynamic Filters from Backend Schema */}
+      {/* Dynamic Filters Bar */}
       <div className="flex items-center gap-2">
-        <Filters fields={fields ?? []} filters={activeFilters} onChange={setActiveFilters} />
+        <Filters
+          fields={activeFields}
+          filters={filters}
+          onChange={setFilters}
+        />
       </div>
 
       <div className="flex items-center justify-between mt-1">
@@ -150,7 +178,7 @@ export function TransactionHistory({ fields }: { fields?: TField[] }) {
       )}
 
       {!isLoading && transactions.length === 0 && (
-        <div className="py-6 text-center">
+        <div className="py-6 text-center animate-in fade-in duration-200">
           <p className="text-sm text-muted-foreground">
             {t("No transactions to display")}
           </p>
@@ -158,16 +186,21 @@ export function TransactionHistory({ fields }: { fields?: TField[] }) {
       )}
 
       {!isLoading && transactions.length > 0 && (
-        <div className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-card">
+        <div className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-card transform-gpu will-change-transform animate-in fade-in slide-in-from-bottom-4 duration-300 ease-out fill-mode-both">
           {transactions.map((tx) => {
-            const txType: TWalletLedger["type"] = tx.type === "credit" ? "credit" : "debit";
+            const txType: TWalletLedger["type"] =
+              tx.type === "credit" ? "credit" : "debit";
             const Icon = TYPE_ICONS[txType];
-            let description = typeof tx.description === "string"
-              ? tx.description
-              : tx.purpose ?? tx.reference;
+            let description =
+              typeof tx.description === "string"
+                ? tx.description
+                : tx.purpose ?? tx.reference;
 
             if (tx.purpose === "wallet_transfer" && txType === "debit") {
-              const target = (tx as any).oppositeTenant?.name || (tx as any).oppositeWallet || t("Wallet");
+              const target =
+                (tx as any).oppositeTenant?.name ||
+                (tx as any).oppositeWallet ||
+                t("Wallet");
               description = t("Transfer to {{target}}", { target });
             }
 
@@ -176,7 +209,10 @@ export function TransactionHistory({ fields }: { fields?: TField[] }) {
                 key={tx._id}
                 className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40"
               >
-                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${TYPE_ICON_BG_CLASS[txType]} ${TYPE_COLOR_CLASS[txType]}`}>
+                <span
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${TYPE_ICON_BG_CLASS[txType]
+                    } ${TYPE_COLOR_CLASS[txType]}`}
+                >
                   <Icon className="h-4 w-4" />
                 </span>
 
@@ -184,27 +220,31 @@ export function TransactionHistory({ fields }: { fields?: TField[] }) {
                   <span className="truncate text-sm font-medium text-foreground">
                     {t(TYPE_LABEL_KEYS[txType])}
                   </span>
+
+                  <span className="text-xs text-muted-foreground font-mono">
+                    {tx.reference}
+                  <CopyButton value={tx.reference} />
+                  </span>
+                
                   <span className="truncate text-xs text-muted-foreground">
                     {description}
                   </span>
-                  {tx.reference && (
-                    <div className="flex items-center gap-0.5 mt-0.5">
-                      <span className="truncate text-xs text-muted-foreground/60 font-mono">
-                        {tx.reference}
-                      </span>
-                      <CopyButton value={tx.reference} />
-                    </div>
-                  )}
+
                 </div>
 
                 <div className="flex shrink-0 flex-col items-end">
-                  <span className={`text-sm font-medium ${TYPE_COLOR_CLASS[txType]}`}>
+                  <span
+                    className={`text-sm font-medium ${TYPE_COLOR_CLASS[txType]
+                      }`}
+                  >
                     {formatAmount(tx.amount, tx.currency, i18n.language)}
                   </span>
                   <div className="flex items-center gap-1.5">
                     <IconCalendar className="size-3.5" />
                     <span className="text-xs text-muted-foreground">
-                      {formatDateForInput(tx.createdAt as TWalletLedger["createdAt"])}
+                      {formatDateForInput(
+                        tx.createdAt as TWalletLedger["createdAt"],
+                      )}
                     </span>
                   </div>
                 </div>

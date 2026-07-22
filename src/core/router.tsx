@@ -169,6 +169,7 @@ coreRoutes.unshift(
     name: "Wallet",
     path: "wallet",
     icon: IconWallet,
+    priority: 50,
     Component: () => <Wallet />,
   }
 )

@@ -38,19 +38,19 @@ export function CopyButton({
         copy();
       }}
       className={cn(
-        "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground",
+        "inline-flex h-4 w-5 shrink-0 items-center justify-center rounded-lg text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground",
         className,
       )}
     >
       <ActionSwapIcon
         value={copied ? "check" : "copy"}
         animation="cascade"
-        className="h-3.5 w-3.5"
+        className="h-3 w-4"
       >
         {copied ? (
           <IconCheck className="h-3.5 w-3.5 text-success" />
         ) : (
-          <IconCopy className="h-3.5 w-3.5" />
+          <IconCopy className="h-2.5 w-3" />
         )}
       </ActionSwapIcon>
     </button>
