@@ -534,7 +534,7 @@ export function ListPage({ group, name }: IListPageProps) {
         <ActionBar
           containerClassName={cn(
             "fixed inset-x-3 z-20 mx-auto max-w-md shadow-sm",
-            isMobileLayout() ? "bottom-21" : "bottom-4"
+            isMobileLayout() ? "bottom-21" : "bottom-4 sm:bottom-12"
           )}
           data-open={!!selectedRows.length}
         >
