@@ -588,14 +588,8 @@ export function ListPage({ group, name }: IListPageProps) {
               <Button
                 size="icon-sm"
                 variant="outline"
-                onClick={() => {
-                  const row = selectedRows.map((row) => row.original)[0] as any
-                  const fallbackName = row.name || row.title || row.label || ""
-
-                  navigate(`form/${row._id}`, {
-                    state: { name: fallbackName },
-                  })
-                }}
+                onClick={() => table.resetRowSelection()}
+                aria-label="Clear selection"
               >
                 <IconX />
               </Button>
