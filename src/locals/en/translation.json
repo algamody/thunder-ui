@@ -67,6 +67,6 @@
   "Buy": "Buy",
   "Sent": "Sent",
   "Received": "Received",
-  "Transfer to {{target}}": "Transfer to {{target}}"
-
+  "Transfer to {{target}}": "Transfer to {{target}}",
+  "name": "Name"
 }

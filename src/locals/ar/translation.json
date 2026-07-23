@@ -67,6 +67,6 @@
   "Buy": "شراء",
   "Sent": "مُرسَل",
   "Received": "مُستلَم",
-  "Transfer to {{target}}": "تحويل إلى {{target}}"
-
+  "Transfer to {{target}}": "تحويل إلى {{target}}",
+  "name": "الاسم"
 }

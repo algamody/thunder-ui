@@ -3,6 +3,7 @@
 import React from "react"
 import type { TField } from "@/core/lib/jsonSchemaToFields"
 import { useFieldArray, useFormContext } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import RenderInput from "./RenderInput"
 import {
   FieldDescription,
@@ -24,6 +25,7 @@ export type TRenderArrayProp = {
 export default function RenderArray({ name, field }: TRenderArrayProp) {
   if (field.type !== "array") return <RenderInput name={name} field={field} />
 
+  const { t } = useTranslation()
   const {
     control,
     formState: { errors },
@@ -33,7 +35,7 @@ export default function RenderArray({ name, field }: TRenderArrayProp) {
     control,
     name,
     rules: {
-      required: field.required && "You need to add one!",
+      required: field.required && t("You need to add one!"),
     },
   })
 
@@ -101,7 +103,7 @@ export default function RenderArray({ name, field }: TRenderArrayProp) {
         })}
 
         <FieldGroup>
-          <Button onClick={() => append({})}>Add</Button>
+          <Button onClick={() => append({})}>{t("Add")}</Button>
         </FieldGroup>
       </FieldSet>
     </FieldGroup>

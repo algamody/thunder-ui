@@ -5,6 +5,7 @@ import React from "react";
 import { useNavigate, useParams } from "react-router";
 import { ThunderSDK } from "thunder-sdk";
 import { FormProvider, type SubmitHandler, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import {
   Field,
   FieldDescription,
@@ -122,6 +123,7 @@ export function FormPage({ name }: IFormPageProps) {
 
   if (CustomForm) return <CustomForm />;
 
+  const { t } = useTranslation();
   const { id } = useParams<{ id?: string }>();
 
   const navigate = useNavigate();
@@ -183,17 +185,21 @@ export function FormPage({ name }: IFormPageProps) {
           params: { id },
           body,
         });
-        toast.success(`${name} updated successfully.`);
+        toast.success(t("{{name}} updated successfully.", { name }));
       } else {
         await ThunderSDK.getModule(name).create({
           body,
         });
-        toast.success(`${name} created successfully.`);
+        toast.success(t("{{name}} created successfully.", { name }));
       }
 
       navigate(-1);
     } catch (error) {
-      toast.error(`Failed to ${isEditMode ? "update" : "create"} ${name}.`);
+      toast.error(
+        isEditMode
+          ? t("Failed to update {{name}}.", { name })
+          : t("Failed to create {{name}}.", { name })
+      );
     }
   };
 
@@ -207,18 +213,21 @@ export function FormPage({ name }: IFormPageProps) {
           >
             <FieldGroup>
               <FieldSet>
-                <FieldLegend>{isEditMode ? "Update" : "Create"}</FieldLegend>
+                <FieldLegend>{isEditMode ? t("Update") : t("Create")}</FieldLegend>
                 <FieldDescription>
                   {isEditMode
-                    ? `Update the ${name} entry below.`
-                    : `Fill the form below to create a new ${name} entry. All fields are required`}
+                    ? t("Update the {{name}} entry below.", { name })
+                    : t(
+                        "Fill the form below to create a new {{name}} entry. All fields are required",
+                        { name }
+                      )}
                 </FieldDescription>
               </FieldSet>
 
               {isFormLoading
                 ? (
                   <Skeleton className="py-8 text-center text-sm text-muted-foreground">
-                    {isEditMode ? "Loading record..." : "Loading form..."}
+                    {isEditMode ? t("Loading record...") : t("Loading form...")}
                   </Skeleton>
                 )
                 : <RenderFieldGroup fields={fields[0].fields ?? []} />}
@@ -230,14 +239,14 @@ export function FormPage({ name }: IFormPageProps) {
                       type="submit"
                       disabled={methods.formState.isSubmitting || isFormLoading}
                     >
-                      Submit
+                      {t("Submit")}
                     </Button>
                     <Button
                       variant="outline"
                       type="button"
                       onClick={() => navigate(-1)}
                     >
-                      Cancel
+                      {t("Cancel")}
                     </Button>
                   </Field>
                 </FieldGroup>

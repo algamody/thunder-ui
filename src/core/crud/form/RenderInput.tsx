@@ -3,6 +3,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react"
 import { Controller, useFormContext, type Control } from "react-hook-form"
+import { useTranslation } from "react-i18next"
+import type { TFunction } from "i18next"
 import {
   Field,
   FieldDescription,
@@ -33,6 +35,7 @@ export default function RenderInput({ name, field }: TRenderInputProps) {
   if (field.type === "array") return <RenderArray name={name} field={field} />
   if (field.type === "object") return <RenderObject name={name} field={field} />
 
+  const { t } = useTranslation()
   const id = React.useMemo(() => crypto.randomUUID(), [])
   const {
     control,
@@ -69,8 +72,8 @@ export default function RenderInput({ name, field }: TRenderInputProps) {
     <Field className={field.className} style={field.style}>
       {field.type === "hidden" ? null : (
         <FieldLabel htmlFor={id}>
-          {field.label ?? name}
-          {field.required ? "" : " (optional)"}
+          {field.label ?? t(name)}
+          {field.required ? "" : ` (${t("optional")})`}
         </FieldLabel>
       )}
       {renderField({
@@ -78,6 +81,7 @@ export default function RenderInput({ name, field }: TRenderInputProps) {
         name,
         field,
         control,
+        t,
       })}
       {field.type === "hidden" ? null : (
         <FieldDescription>{field.description}</FieldDescription>
@@ -92,18 +96,20 @@ export const renderField = ({
   name,
   field,
   control,
+  t,
 }: {
   id: string
   name: string
   field: TField
   control: Control<any, any, any>
+  t: TFunction
 }) => {
   if (field.type === "text" && field.fieldHint === "markdown") {
     return (
       <Controller
         name={name}
         control={control}
-        rules={{ required: field.required && "This field is required!" }}
+        rules={{ required: field.required && t("This field is required!") }}
         render={(def) => (
           <MarkdownEditorField
             value={def.field.value}
@@ -119,7 +125,7 @@ export const renderField = ({
       <Controller
         name={name}
         control={control}
-        rules={{ required: field.required && "This field is required!" }}
+        rules={{ required: field.required && t("This field is required!") }}
         render={(def) => (
           <AvatarUpload
             id={id}
@@ -154,7 +160,7 @@ export const renderField = ({
       <Controller
         name={name}
         control={control}
-        rules={{ required: field.required && "This field is required!" }}
+        rules={{ required: field.required && t("This field is required!") }}
         render={(def) => {
           const currentValue = def.field.value
 
@@ -225,7 +231,7 @@ export const renderField = ({
       <Controller
         name={name}
         control={control}
-        rules={{ required: field.required && "This field is required!" }}
+        rules={{ required: field.required && t("This field is required!") }}
         render={(def) => (
           <Switch
             id={id}
@@ -241,7 +247,7 @@ export const renderField = ({
       <Controller
         name={name}
         control={control}
-        rules={{ required: field.required && "This field is required!" }}
+        rules={{ required: field.required && t("This field is required!") }}
         render={(def) => (
           <Multiselect
             id={id}
@@ -257,7 +263,7 @@ export const renderField = ({
       <Controller
         name={name}
         control={control}
-        rules={{ required: field.required && "This field is required!" }}
+        rules={{ required: field.required && t("This field is required!") }}
         render={(def) => (
           <Dropdown
             id={id}
@@ -280,7 +286,7 @@ export const renderField = ({
         <Controller
           name={name}
           control={control}
-          rules={{ required: field.required && "This field is required!" }}
+          rules={{ required: field.required && t("This field is required!") }}
           render={(def) => (
             <Tag
               id={id}
@@ -300,7 +306,7 @@ export const renderField = ({
         <Controller
           name={name}
           control={control}
-          rules={{ required: field.required && "This field is required!" }}
+          rules={{ required: field.required && t("This field is required!") }}
           render={(def) => (
             <Textarea
               id={id}
@@ -322,7 +328,7 @@ export const renderField = ({
         <Controller
           name={name}
           control={control}
-          rules={{ required: field.required && "This field is required!" }}
+          rules={{ required: field.required && t("This field is required!") }}
           render={(def) => (
             <Input
               id={id}
@@ -340,7 +346,7 @@ export const renderField = ({
       <Controller
         name={name}
         control={control}
-        rules={{ required: field.required && "This field is required!" }}
+        rules={{ required: field.required && t("This field is required!") }}
         render={(def) => (
           <Input
             id={id}
@@ -358,7 +364,7 @@ export const renderField = ({
     <Controller
       name={name}
       control={control}
-      rules={{ required: field.required && "This field is required!" }}
+      rules={{ required: field.required && t("This field is required!") }}
       render={(def) => (
         <Input
           id={id}
