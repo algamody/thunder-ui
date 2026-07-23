@@ -89,7 +89,7 @@ export function Pagination({
   )
 
   return totalPages.length > 1 ? (
-    <_Pagination>
+    <_Pagination className="pb-2">
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious

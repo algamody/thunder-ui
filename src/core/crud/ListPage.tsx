@@ -490,16 +490,14 @@ export function ListPage({ group, name }: IListPageProps) {
                   <Skeleton className="h-9 w-sm" />
                 </div>
               ) : countData?.count ? (
-                <div className="mb-2">
-                  <Pagination
-                    active={page}
-                    limit={DEFAULT_LIMIT}
-                    total={countData.count ?? 0}
-                    onChange={(page) => {
-                      setPage(page)
-                    }}
-                  />
-                </div>
+                <Pagination
+                  active={page}
+                  limit={DEFAULT_LIMIT}
+                  total={countData.count ?? 0}
+                  onChange={(page) => {
+                    setPage(page)
+                  }}
+                />
               ) : null}
 
               {isMobileLayout() && totalPages > 1 && selectedRows.length > 0 && (
