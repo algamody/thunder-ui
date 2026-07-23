@@ -490,16 +490,14 @@ export function ListPage({ group, name }: IListPageProps) {
                   <Skeleton className="h-9 w-sm" />
                 </div>
               ) : countData?.count ? (
-                <div className="mb-2">
-                  <Pagination
-                    active={page}
-                    limit={DEFAULT_LIMIT}
-                    total={countData.count ?? 0}
-                    onChange={(page) => {
-                      setPage(page)
-                    }}
-                  />
-                </div>
+                <Pagination
+                  active={page}
+                  limit={DEFAULT_LIMIT}
+                  total={countData.count ?? 0}
+                  onChange={(page) => {
+                    setPage(page)
+                  }}
+                />
               ) : null}
 
               {isMobileLayout() && totalPages > 1 && selectedRows.length > 0 && (
@@ -536,7 +534,7 @@ export function ListPage({ group, name }: IListPageProps) {
         <ActionBar
           containerClassName={cn(
             "fixed inset-x-3 z-20 mx-auto max-w-md shadow-sm",
-            !isMobileLayout() ? "bottom-20" : ""
+            isMobileLayout() ? "bottom-21" : "bottom-4 sm:bottom-12"
           )}
           data-open={!!selectedRows.length}
         >
@@ -590,14 +588,8 @@ export function ListPage({ group, name }: IListPageProps) {
               <Button
                 size="icon-sm"
                 variant="outline"
-                onClick={() => {
-                  const row = selectedRows.map((row) => row.original)[0] as any
-                  const fallbackName = row.name || row.title || row.label || ""
-
-                  navigate(`form/${row._id}`, {
-                    state: { name: fallbackName },
-                  })
-                }}
+                onClick={() => table.resetRowSelection()}
+                aria-label="Clear selection"
               >
                 <IconX />
               </Button>

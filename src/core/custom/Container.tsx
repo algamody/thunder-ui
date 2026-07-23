@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils"
 
-type HTMLTag = keyof HTMLElementTagNameMap
+type HTMLTag = keyof React.JSX.IntrinsicElements
 
 export function Container({
   className,
