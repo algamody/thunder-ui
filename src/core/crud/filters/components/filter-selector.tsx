@@ -17,10 +17,12 @@ import {
 import type { TField } from "@/core/lib/jsonSchemaToFields"
 import { IconArrowRight, IconFilter } from "@tabler/icons-react"
 import React from "react"
+import { useTranslation } from "react-i18next"
 import { filterIcon, useFilters } from ".."
 import { FilterValueController } from "./filter-value"
 
 export function FilterSelector() {
+  const { t } = useTranslation()
   const { fields, filters, onChange } = useFilters()
   const inputRef = React.useRef<HTMLInputElement>(null)
 
@@ -51,8 +53,8 @@ export function FilterSelector() {
               : 0
           }}
         >
-          <CommandInput ref={inputRef} placeholder="Search..." />
-          <CommandEmpty>No filters found.</CommandEmpty>
+          <CommandInput ref={inputRef} placeholder={t("Search...")} />
+          <CommandEmpty>{t("No filters found.")}</CommandEmpty>
           <CommandList className="max-h-fit scroll-mask-y-from-90%">
             <CommandGroup>
               {fields
@@ -73,7 +75,7 @@ export function FilterSelector() {
           </CommandList>
         </Command>
       ),
-    [fields, property, field, filters, onChange]
+    [fields, property, field, filters, onChange, t]
   )
 
   return (
@@ -82,7 +84,7 @@ export function FilterSelector() {
         render={
           <Button variant="outline">
             <IconFilter className="size-4" />
-            {!hasFilters && <span>Filter</span>}
+            {!hasFilters && <span>{t("Filter")}</span>}
           </Button>
         }
       ></PopoverTrigger>
